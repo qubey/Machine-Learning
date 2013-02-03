@@ -1,16 +1,32 @@
+// Copyright 2013 Ruben Sethi.  All rights reserved.
+
 #include "StringUtil.h"
 
 #include <sstream>
 
-std::vector<std::string> StringUtil::split(std::string& input, char delim) {
-  std::vector<std::string> result;
-  std::istringstream data(input);
+using namespace std;
+
+vector<string> StringUtil::split(string& input, char delim) {
+  vector<string> result;
+  istringstream data(input);
 
   while (!data.eof() && !data.fail()) {
-    std::string piece;
-    std::getline(data, piece, delim);
+    string piece;
+    getline(data, piece, delim);
     result.push_back(piece);
   }
   
   return result;
+}
+
+bool StringUtil::parse(std::string& input, double* out) {
+  istringstream data(input);
+  data >> (*out);
+  return data.fail();
+}
+
+bool StringUtil::parse(std::string& input, int* out) {
+  istringstream data(input);
+  data >> (*out);
+  return data.fail();
 }

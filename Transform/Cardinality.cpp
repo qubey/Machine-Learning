@@ -1,4 +1,7 @@
+// Copyright 2013 Ruben Sethi.  All rights reserved.
+
 #include "Cardinality.h"
+#include "../Common/StringUtil.h"
 
 using namespace std;
 
@@ -8,6 +11,11 @@ void FeatureCardinality::addValue(string& value) {
     return;
   }
 
+  double doubleValue;
+  double_ = double_ && StringUtil::parse(value, &doubleValue); 
+  int intValue;
+  integer_ = integer_ && StringUtil::parse(value, &intValue);
+
   if (values_.find(value) == values_.end()) {
     values_.insert(value);
   }
@@ -15,4 +23,15 @@ void FeatureCardinality::addValue(string& value) {
 
 size_t FeatureCardinality::getCardinality() const {
   return values_.size() > maxCardinality_ ? -1 : values_.size();
+}
+
+std::string FeatureCardinality::getType() const {
+  string type = "String";
+  if (integer_) {
+    type = "Integer";
+  } else if (double_) {
+    type = "Double";
+  }
+
+  return type;
 }

@@ -1,3 +1,5 @@
+// Copyright 2013 Ruben Sethi.  All rights reserved
+
 #include "Cardinality.h"
 #include "../Common/StringUtil.h"
 
@@ -29,6 +31,7 @@ int main(int argc, char **argv) {
     ss << cardinality;
     std::cout << features[i] << ": "
               << (cardinality == -1 ? "LIMIT" : ss.str())
+              << ", " << cardinalities[i].getType()
               << std::endl;
   }
 }
