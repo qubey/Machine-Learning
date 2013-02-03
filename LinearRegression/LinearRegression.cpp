@@ -33,8 +33,11 @@ int main(int argc, char** argv) {
   string line;
   // first read value names
   getline(cin, line);
+  // The first feature name should be the target
   vector<string> featureNames = StringUtil::split(line, ',');
-  vector<double> weights(featureNames.size() - 1);
+
+  // The first weight will be the bias
+  vector<double> weights(featureNames.size());
   
   int64_t linesSkipped = 0;
   while (getline(cin, line)) {
@@ -48,7 +51,9 @@ int main(int argc, char** argv) {
 
     // Convert features from string to doubles
     vector<double> example;
-    example.reserve(values.size() - 1);
+    example.reserve(values.size());
+    // This is for the bias
+    example.push_back(1);
     for (int i = 0; i < example.size(); i++) {
       double value;
       if (!StringUtil::parse(values[i+1], &value)) {
@@ -57,7 +62,7 @@ int main(int argc, char** argv) {
       example.push_back(value);
     }
 
-    if (example.size() != featureNames.size() - 1) {
+    if (example.size() != featureNames.size()) {
       cerr << "Invalid feature count for line.  Expected "
            << featureNames.size() - 1
            << "but had " << example.size() << endl;
