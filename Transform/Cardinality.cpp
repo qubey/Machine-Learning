@@ -1,7 +1,7 @@
 // Copyright 2013 Ruben Sethi.  All rights reserved.
 
 #include "Cardinality.h"
-#include "../Common/StringUtil.h"
+#include "StringUtil.h"
 
 using namespace std;
 
