@@ -10,6 +10,8 @@
 
 using namespace std;
 
+const char kOutputDelimiter = ',';
+
 int main(int argc, char **argv) {
   string line;
   std::getline(std::cin, line);
@@ -29,9 +31,9 @@ int main(int argc, char **argv) {
     size_t cardinality = cardinalities[i].getCardinality();
     ostringstream ss;
     ss << cardinality;
-    std::cout << features[i] << ": "
+    std::cout << features[i] << kOutputDelimiter
               << (cardinality == -1 ? "LIMIT" : ss.str())
-              << ", " << cardinalities[i].getType()
+              << kOutputDelimiter << cardinalities[i].getType()
               << std::endl;
   }
 }
