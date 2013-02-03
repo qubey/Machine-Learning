@@ -1,2 +1,8 @@
 
 *.so
+
+Transform/cardinality
+
+*.plist
+
+Transform/cardinality.dSYM/Contents/Resources/DWARF/cardinality
