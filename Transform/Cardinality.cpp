@@ -3,18 +3,24 @@
 #include "Cardinality.h"
 #include "StringUtil.h"
 
+#include <iostream>
+
 using namespace std;
 
 void FeatureCardinality::addValue(string& value) {
-  if (values_.size() > maxCardinality_
-      || value.size() == 0) {
+  if (value.size() == 0) {
     return;
   }
 
+  // Check whether or not it is a double or integer
   double doubleValue;
   double_ = double_ && StringUtil::parse(value, &doubleValue); 
   int intValue;
   integer_ = integer_ && StringUtil::parse(value, &intValue);
+
+  if (values_.size() > maxCardinality_) {
+    return;
+  }
 
   if (values_.find(value) == values_.end()) {
     values_.insert(value);

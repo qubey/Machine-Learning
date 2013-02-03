@@ -20,13 +20,21 @@ vector<string> StringUtil::split(string& input, char delim) {
 }
 
 bool StringUtil::parse(std::string& input, double* out) {
-  istringstream data(input);
-  data >> (*out);
-  return data.fail();
+  bool success = true;
+  try {
+    *out = stod(input);
+  } catch (const std::exception& e) {
+    success = false;
+  }
+  return success;
 }
 
 bool StringUtil::parse(std::string& input, int* out) {
-  istringstream data(input);
-  data >> (*out);
-  return data.fail();
+  bool success = true;
+  try {
+    *out = stoi(input);
+  } catch (const std::exception& e) {
+    success = false;
+  }
+  return success;
 }
