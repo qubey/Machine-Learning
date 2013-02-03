@@ -6,3 +6,11 @@ Transform/cardinality
 *.plist
 
 Transform/cardinality.dSYM/Contents/Resources/DWARF/cardinality
+
+Matrix/test
+
+Matrix/test.dSYM/Contents/Resources/DWARF/test
+
+*.swp
+
+LinearRegression/train
