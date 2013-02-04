@@ -25,7 +25,7 @@ bool parseFeatureInfo(const char* file,
   string line;
   while (getline(featureData, line)) {
     vector<string> info = StringUtil::split(line, kDelimiter);
-    if (info.size() != 3) {
+    if (info.size() < 3) {
       cerr << "Invalid line: " << line << endl;
       continue;
     }

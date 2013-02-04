@@ -18,6 +18,34 @@ void FeatureCardinality::addValue(string& value) {
   int intValue;
   integer_ = integer_ && StringUtil::parse(value, &intValue);
 
+  if (isFirst_) {
+    maxDouble_ = doubleValue;
+    maxInt_ = intValue;
+    minDouble_ = doubleValue;
+    minInt_ = intValue;
+    isFirst_ = false;
+  }
+
+  if (integer_) {
+    if (maxInt_ < intValue) {
+      maxInt_ = intValue;
+    }
+
+    if (minInt_ > intValue) {
+      minInt_ = intValue;
+    }
+  }
+
+  if (double_) {
+    if (maxDouble_ < doubleValue) {
+      maxDouble_ = doubleValue;
+    }
+
+    if (minDouble_ > doubleValue) {
+      minDouble_ = doubleValue;
+    }
+  }
+
   if (values_.size() > maxCardinality_) {
     return;
   }
@@ -40,4 +68,12 @@ std::string FeatureCardinality::getType() const {
   }
 
   return type;
+}
+
+pair<double, double> FeatureCardinality::getDoubleBounds() const {
+  return make_pair(minDouble_, maxDouble_);
+}
+
+pair<int, int> FeatureCardinality::getIntBounds() const {
+  return make_pair(minInt_, maxInt_);
 }

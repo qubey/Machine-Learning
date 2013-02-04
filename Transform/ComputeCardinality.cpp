@@ -28,12 +28,26 @@ int main(int argc, char **argv) {
   }
 
   for (int i = 0; i < cardinalities.size(); i++) {
+    string type = cardinalities[i].getType();
+    stringstream bounds;
+    if (type == "Double") {
+      pair<int, int> intBounds = cardinalities[i].getIntBounds();
+      bounds << kOutputDelimiter << intBounds.first
+             << kOutputDelimiter << intBounds.second;
+    } else if (type == "Integer")  {
+      pair<double, double> doubleBounds = cardinalities[i].getDoubleBounds();
+      bounds << kOutputDelimiter << doubleBounds.first
+             << kOutputDelimiter << doubleBounds.second;
+    }
+
+
     size_t cardinality = cardinalities[i].getCardinality();
     ostringstream ss;
     ss << cardinality;
     std::cout << features[i] << kOutputDelimiter
+              << cardinalities[i].getType() << kOutputDelimiter
               << (cardinality == -1 ? "LIMIT" : ss.str())
-              << kOutputDelimiter << cardinalities[i].getType()
+              << bounds.str()
               << std::endl;
   }
 }
