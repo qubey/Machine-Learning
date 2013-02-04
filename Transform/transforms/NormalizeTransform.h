@@ -1,4 +1,5 @@
 // Copyright 2013 Ruben Sethi.  All rights reserved
+#pragma once
 
 #include "Transform.h"
 
@@ -17,3 +18,5 @@ class NormalizeTransform : public Transform {
   T min_;
   T max_;
 };
+
+#include "NormalizeTransform-inl.h"

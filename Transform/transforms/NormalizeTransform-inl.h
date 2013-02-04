@@ -1,7 +1,5 @@
 // Copyright 2013 Ruben Sethi.  All rights reserved
 
-#include "NormalizeTransform.h"
-
 #include <StringUtil.h>
 #include <vector>
 #include <string>
@@ -12,11 +10,13 @@ using namespace std;
 template <typename T>
 NormalizeTransform<T>::NormalizeTransform(const vector<string>& input)
               : Transform(input) {
-  if (!StringUtil::parse(input[3], &min_)) {
+  string minStr(input[3]);
+  if (!StringUtil::parse(minStr, &min_)) {
     cerr << "Could not parse min for feature " << name_ << endl;
   }
 
-  if (!StringUtil::parse(input[4], &max_)) {
+  string maxStr(input[4]);
+  if (!StringUtil::parse(maxStr, &max_)) {
     cerr << "Could not parse max for feature " << name_ << endl;
   }
 }
@@ -29,7 +29,7 @@ void NormalizeTransform<T>::execute(const string& value,
   T input;
   if (!StringUtil::parse(value, &input)) {
     cerr << "Invalid value for " << name_ << ": " << value << endl;
-    return -1;
+    return;
   }
 
   out->push_back(((double) input - min_) / (max_ - min_));

@@ -14,6 +14,8 @@ class Transform {
     STRING
   };
 
+  std::string getName() const { return name_; }
+
   virtual void execute(const std::string& value, std::vector<double>* out) = 0;
 
   virtual int getNumOutputs() const = 0;

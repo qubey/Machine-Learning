@@ -1,6 +1,7 @@
 // Copyright 2013 Ruben Sethi.  All rights reserved
 
-#include <StringUtil.h> 
+#include "transforms/TransformFactory.h"
+#include <StringUtil.h>
 
 #include <string>
 #include <iostream>
@@ -8,13 +9,14 @@
 #include <fstream>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
 const char kDelimiter = ',';
 
-bool parseFeatureInfo(const char* file,
-                      unordered_map<string, pair<string, int>>* output) {
+bool parseFeatureTransforms(const char* file,
+                         unordered_map<string, shared_ptr<Transform>>* output) {
   fstream featureData(file);
   if (!featureData.good()) {
     cerr << "Couldn't open file " << file << endl;
@@ -30,12 +32,8 @@ bool parseFeatureInfo(const char* file,
       continue;
     }
 
-    int cardinality;
-    if (!StringUtil::parse(info[2], &cardinality)) {
-      continue;
-    }
-
-    (*output)[info[0]] = make_pair(info[1], cardinality);
+    shared_ptr<Transform> transform = TransformFactory::createTransform(info);
+    (*output)[transform->getName()] = transform;
   }
   featureData.close();
 
@@ -49,8 +47,8 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  unordered_map<string, pair<string, int>> featureInfo;
-  if (!parseFeatureInfo(argv[1], &featureInfo)) {
+  unordered_map<string, shared_ptr<Transform>> featureTransforms;
+  if (!parseFeatureTransforms(argv[1], &featureTransforms)) {
     return -1;
   }
 }

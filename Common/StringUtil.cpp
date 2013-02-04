@@ -19,7 +19,7 @@ vector<string> StringUtil::split(string& input, char delim) {
   return result;
 }
 
-bool StringUtil::parse(std::string& input, double* out) {
+bool StringUtil::parse(const std::string& input, double* out) {
   bool success = true;
   try {
     *out = stod(input);
@@ -29,7 +29,7 @@ bool StringUtil::parse(std::string& input, double* out) {
   return success;
 }
 
-bool StringUtil::parse(std::string& input, int* out) {
+bool StringUtil::parse(const std::string& input, int* out) {
   bool success = true;
   try {
     *out = stoi(input);

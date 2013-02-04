@@ -12,5 +12,5 @@ class DummyTransform : public Transform {
 
   int getNumOutputs() const { return 0; }
 
-  void getNames(std::vector<std::string>* names) { names->clear(); }
-}
+  void getNames(std::vector<std::string>* names) const { names->clear(); }
+};

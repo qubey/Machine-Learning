@@ -8,17 +8,25 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 class TransformFactory {
  public:
-  static Transform createTransform(const std::vector<std::string>& input) {
+  static std::shared_ptr<Transform> createTransform(
+                                    const std::vector<std::string>& input) {
     std::string type = input[1];
     if (type != "String") {
-      return input[2] == "LIMIT" ? NormalizeTransform(input)
-                                 : ExpandTransform(input);
+      if (input[2] == "LIMIT") {
+        return std::make_shared<ExpandTransform>(input);
+      } else if (type == "Double") {
+        return std::make_shared<NormalizeTransform<double> >(input);
+      } else {
+        return std::make_shared<NormalizeTransform<int> >(input);
+      }
+    } else if (input[2] == "LIMIT") {
+      return std::make_shared<DummyTransform>(input);
     } else {
-      return input[2] == "LIMIT" ? DummyTransform(input)
-                                 : ExpandTransform(input);
+      return std::make_shared<ExpandTransform>(input);
     }
   }
 };
