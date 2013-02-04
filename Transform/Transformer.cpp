@@ -26,7 +26,8 @@ bool parseFeatureTransforms(const char* file,
   // Parse the file containing the feature information
   string line;
   while (getline(featureData, line)) {
-    vector<string> info = StringUtil::split(line, kDelimiter);
+    vector<string> info;
+    StringUtil::split(line, kDelimiter, &info);
     if (info.size() < 3) {
       cerr << "Invalid line: " << line << endl;
       continue;
@@ -40,15 +41,82 @@ bool parseFeatureTransforms(const char* file,
   return true;
 }
 
+void constructTransformMap(
+        unordered_map<string, shared_ptr<Transform>>& transforms,
+        const char *targetName,
+        vector<shared_ptr<Transform>>* out,
+        int* targetIndex) {
+  out->clear();
+
+  string line;
+  getline(cin, line);
+
+  vector<string> features;
+  StringUtil::split(line, kDelimiter, &features);
+  string target(targetName);
+
+  out->resize(features.size());
+  for (int i = 0; i < features.size(); i++)  {
+    if (features[i] == target) {
+      *targetIndex = i;
+      continue;
+    }
+
+    if (transforms.find(features[i]) != transforms.end()) {
+      (*out)[i] = transforms[features[i]];
+    }
+  }
+}
+
 int main(int argc, char** argv) {
-  if (argc != 2) {
+  if (argc != 3) {
     cerr << "Error: expects one argument.  " << argv[0]
-         << " <feature info file>" << endl;
+         << " <feature_info_file> <target_feature_name>" << endl;
     return -1;
   }
 
   unordered_map<string, shared_ptr<Transform>> featureTransforms;
   if (!parseFeatureTransforms(argv[1], &featureTransforms)) {
     return -1;
+  }
+
+  vector<shared_ptr<Transform>> executionTransforms;
+  int targetIndex;
+  constructTransformMap(featureTransforms, argv[2],
+                        &executionTransforms, &targetIndex);
+
+  // Get the total number of output features
+  int outputCount = 0;
+  for (int i = 0; i < executionTransforms.size(); i++) {
+    if (executionTransforms[i]) {
+      outputCount += executionTransforms[i]->getNumOutputs();
+    }
+  }
+
+  string line;
+  vector<double> finalFeatures(outputCount);
+  vector<double> transformedValues;
+  int offset = 0;
+
+  while (getline(cin, line)) {
+    vector<string> featureValues;
+    StringUtil::split(line, kDelimiter, &featureValues);
+
+    for (int i = 0; i < featureValues.size(); i++) {
+      if (!executionTransforms[i]) {
+        continue;
+      }
+
+      executionTransforms[i]->execute(featureValues[i], &transformedValues);
+      for (int j = 0; j < executionTransforms[i]->getNumOutputs(); j++) {
+        finalFeatures[offset++] = transformedValues[j];
+      }
+    }
+
+    cout << featureValues[targetIndex];
+    for (int i = 0; i < finalFeatures.size(); i++) {
+      cout << kDelimiter << finalFeatures[i];
+    }
+    cout << endl;
   }
 }

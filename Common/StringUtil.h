@@ -7,7 +7,8 @@
 
 class StringUtil {
  public:
-  static std::vector<std::string> split(std::string& input, char delim);
+  static void split(std::string& input, char delim,
+                    std::vector<std::string>* out);
 
   static bool parse(const std::string& input, double* out);
 

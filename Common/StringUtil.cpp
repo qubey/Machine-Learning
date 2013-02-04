@@ -3,20 +3,23 @@
 #include "StringUtil.h"
 
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
-vector<string> StringUtil::split(string& input, char delim) {
-  vector<string> result;
+void StringUtil::split(string& input, char delim, vector<string>* out) {
+  if (out == nullptr) {
+    cerr << "Null output vector specified for string split" << endl;
+    return;
+  }
+
   istringstream data(input);
 
   while (!data.eof() && !data.fail()) {
     string piece;
     getline(data, piece, delim);
-    result.push_back(piece);
+    out->push_back(piece);
   }
-  
-  return result;
 }
 
 bool StringUtil::parse(const std::string& input, double* out) {

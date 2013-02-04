@@ -16,11 +16,13 @@ int main(int argc, char **argv) {
   string line;
   std::getline(std::cin, line);
 
-  vector<string> features = StringUtil::split(line, ',');
+  vector<string> features;
+  StringUtil::split(line, ',', &features);
   vector<FeatureCardinality> cardinalities(features.size());
 
   while (getline(std::cin, line)) {
-    vector<string> featureValues = StringUtil::split(line, ',');
+    vector<string> featureValues;
+    StringUtil::split(line, ',', &featureValues);
     for (int i = 0; i < featureValues.size()
                     && i < features.size(); i++) {
       cardinalities[i].addValue(featureValues[i]);
