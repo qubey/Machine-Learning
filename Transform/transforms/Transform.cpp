@@ -18,5 +18,7 @@ Transform::Transform(const vector<string>& input) {
   string cardinalityStr(input[2]);
   if (!StringUtil::parse(cardinalityStr, &cardinality_)) {
     cardinality_ = -1;
+    cerr << "Transform: " << name_ << ": "
+         << "could not parse cardinality" <<endl;
   }
 }

@@ -25,14 +25,15 @@ template <typename T>
 void NormalizeTransform<T>::execute(const string& value,
                                     vector<double>* out) {
   out->clear();
+  out->resize(1);
 
   T input;
   if (!StringUtil::parse(value, &input)) {
-    cerr << "Invalid value for " << name_ << ": " << value << endl;
+    (*out)[0] = 0;
     return;
   }
 
-  out->push_back(((double) input - min_) / (max_ - min_));
+  (*out)[0] = (((double) input - min_) / (max_ - min_));
 }
 
 template <typename T>

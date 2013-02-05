@@ -97,17 +97,18 @@ int main(int argc, char** argv) {
   vector<double> finalFeatures(outputCount);
   vector<double> transformedValues;
   int offset = 0;
-
   while (getline(cin, line)) {
     vector<string> featureValues;
     StringUtil::split(line, kDelimiter, &featureValues);
 
-    for (int i = 0; i < featureValues.size(); i++) {
+    for (int i = 0; i < featureValues.size()
+                    && i < executionTransforms.size(); i++) {
       if (!executionTransforms[i]) {
         continue;
       }
 
       executionTransforms[i]->execute(featureValues[i], &transformedValues);
+
       for (int j = 0; j < executionTransforms[i]->getNumOutputs(); j++) {
         finalFeatures[offset++] = transformedValues[j];
       }
@@ -118,5 +119,27 @@ int main(int argc, char** argv) {
       cout << kDelimiter << finalFeatures[i];
     }
     cout << endl;
+    offset = 0;
+  }
+
+  bool isFirstName = true;
+  vector<string> names;
+  for (int i = 0; i < executionTransforms.size(); i++) {
+    if(!executionTransforms[i]) {
+     continue;
+    }
+
+    executionTransforms[i]->getNames(&names);
+    if (names.size() == 0) {
+      continue;
+    }
+
+    for (const auto& name : names) {
+      if (!isFirstName) {
+        cout << kDelimiter;
+      }
+      cout << name;
+      isFirstName = false;
+    }
   }
 }

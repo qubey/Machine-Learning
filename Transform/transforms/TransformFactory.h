@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 class TransformFactory {
  public:
@@ -16,7 +17,7 @@ class TransformFactory {
                                     const std::vector<std::string>& input) {
     std::string type = input[1];
     if (type != "String") {
-      if (input[2] == "LIMIT") {
+      if (input[2] != "LIMIT") {
         return std::make_shared<ExpandTransform>(input);
       } else if (type == "Double") {
         return std::make_shared<NormalizeTransform<double> >(input);

@@ -18,3 +18,5 @@ LinearRegression/train
 Transform/transformer
 
 *.csv
+
+Transform/run.sh
