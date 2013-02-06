@@ -95,10 +95,10 @@ int main(int argc, char** argv) {
 
   string line;
   vector<double> finalFeatures(outputCount);
-  vector<double> transformedValues;
+  vector<string> featureValues;
   int offset = 0;
   while (getline(cin, line)) {
-    vector<string> featureValues;
+    featureValues.clear();
     StringUtil::split(line, kDelimiter, &featureValues);
 
     for (int i = 0; i < featureValues.size()
@@ -107,11 +107,8 @@ int main(int argc, char** argv) {
         continue;
       }
 
-      executionTransforms[i]->execute(featureValues[i], &transformedValues);
-
-      for (int j = 0; j < executionTransforms[i]->getNumOutputs(); j++) {
-        finalFeatures[offset++] = transformedValues[j];
-      }
+      executionTransforms[i]->execute(featureValues[i], offset, &finalFeatures);
+      offset += executionTransforms[i]->getNumOutputs();
     }
 
     cout << featureValues[targetIndex];
@@ -122,7 +119,7 @@ int main(int argc, char** argv) {
     offset = 0;
   }
 
-  bool isFirstName = true;
+  cout << argv[2];
   vector<string> names;
   for (int i = 0; i < executionTransforms.size(); i++) {
     if(!executionTransforms[i]) {
@@ -135,11 +132,7 @@ int main(int argc, char** argv) {
     }
 
     for (const auto& name : names) {
-      if (!isFirstName) {
-        cout << kDelimiter;
-      }
-      cout << name;
-      isFirstName = false;
+      cout << "," << name;
     }
   }
 }

@@ -16,18 +16,23 @@ class TransformFactory {
   static std::shared_ptr<Transform> createTransform(
                                     const std::vector<std::string>& input) {
     std::string type = input[1];
-    if (type != "String") {
-      if (input[2] != "LIMIT") {
-        return std::make_shared<ExpandTransform>(input);
-      } else if (type == "Double") {
-        return std::make_shared<NormalizeTransform<double> >(input);
+    std::string cardinality = input[2];
+
+    if (cardinality == "LIMIT") {
+      if (type == "String") {
+        return std::make_shared<DummyTransform>(input);
       } else {
-        return std::make_shared<NormalizeTransform<int> >(input);
+        return std::make_shared<NormalizeTransform>(input);
       }
-    } else if (input[2] == "LIMIT") {
-      return std::make_shared<DummyTransform>(input);
-    } else {
+    } else if (type == "Double" || type == "Integer" || type == "String") {
       return std::make_shared<ExpandTransform>(input);
     }
+
+
+    std::cerr << "Couldn't determine transform type for "
+              << input[0] << ", " << input[1] << ", " << input[2]
+              << std::endl;
+
+    return std::shared_ptr<Transform>();
   }
 };

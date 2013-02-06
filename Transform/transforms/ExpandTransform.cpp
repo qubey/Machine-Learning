@@ -15,23 +15,35 @@ ExpandTransform::ExpandTransform(const vector<string>& input)
 }
 
 void ExpandTransform::execute(const string& value,
+                              int offset,
                               vector<double>* out) {
   if (cardinality_ < 1) {
     return;
   }
 
-  out->clear();
-  out->resize(cardinality_);
-
-  if (values_.find(value) == values_.end()) {
-    values_[value] = values_.size();
+  if (offset + cardinality_ - 1 >= out->size()) {
+    cerr << "Error (" << name_ << "): offset (" << offset << " + "
+         << cardinality_
+         << ") larger than output vector (" << out->size() << ")" << endl;
+    return;
   }
 
-  (*out)[values_[value]] = 1;
+  if (value.size() > 0 && values_.find(value) == values_.end()) {
+    values_[value] = values_.size();
+    if (values_.size() > cardinality_) {
+      cerr << "Error: map exceeded specified cardinality for feature "
+           << name_ << endl;
+    }
+  }
+
+  int mappedValue = value.size() == 0 ? -1 : values_[value];
+  for (int i = 0; i < cardinality_; i++) {
+    (*out)[offset + i] = i == mappedValue ? 1 : 0;
+  }
 }
 
 int ExpandTransform::getNumOutputs() const {
-  return cardinality_;
+  return cardinality_ < 1 ? 0 : cardinality_;
 }
 
 void ExpandTransform::getNames(vector<string>* names) const {

@@ -3,20 +3,17 @@
 
 #include "Transform.h"
 
-template<typename T>
 class NormalizeTransform : public Transform {
  public:
   explicit NormalizeTransform(const std::vector<std::string>& input);
 
-  void execute(const std::string& value, std::vector<double>* out);
+  void execute(const std::string& value, int offset, std::vector<double>* out);
 
   int getNumOutputs() const;
 
   void getNames(std::vector<std::string>* names) const;
 
  private:
-  T min_;
-  T max_;
+  double min_;
+  double max_;
 };
-
-#include "NormalizeTransform-inl.h"

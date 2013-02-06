@@ -6,7 +6,7 @@ class ExpandTransform : public Transform {
  public:
   explicit ExpandTransform(const std::vector<std::string>& input);
 
-  void execute(const std::string& value, std::vector<double>* out);
+  void execute(const std::string& value, int offset, std::vector<double>* out);
 
   int getNumOutputs() const;
 
