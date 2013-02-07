@@ -8,7 +8,7 @@
 using namespace std;
 
 ExpandTransform::ExpandTransform(const vector<string>& input)
-              : Transform(input) {
+              : Transform(input), currentCount_(0) {
   if (cardinality_ < 1) {
     cerr << "Error: bad cardinality for transform " << name_ << endl;
   }
@@ -29,8 +29,9 @@ void ExpandTransform::execute(const string& value,
   }
 
   if (value.size() > 0 && values_.find(value) == values_.end()) {
-    values_[value] = values_.size();
-    if (values_.size() > cardinality_) {
+    values_[value] = currentCount_;
+    currentCount_++;
+    if (currentCount_ > cardinality_) {
       cerr << "Error: map exceeded specified cardinality for feature "
            << name_ << endl;
     }

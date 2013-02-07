@@ -15,4 +15,5 @@ class ExpandTransform : public Transform {
 
  private:
   std::unordered_map<std::string, int> values_;
+  int currentCount_;
 };

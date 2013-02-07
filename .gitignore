@@ -24,3 +24,7 @@ Transform/run.sh
 Transform/transformer.dSYM/Contents/Resources/DWARF/transformer
 
 LinearRegression/train.sh
+
+LinearRegression/run.sh
+
+LinearRegression/predict
