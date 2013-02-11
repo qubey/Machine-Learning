@@ -10,42 +10,15 @@ using namespace std;
 
 const char kDelimiter = ',';
 
-int main(int argc, char** argv) {
-  if (argc != 3) {
-    cerr << "Usage: " << argv[0] << " <input_file> <learning_rate>" << endl;
-    return -1;
-  }
-
-  fstream inputFile(argv[1]);
-  if (!inputFile.good()) {
-    cerr << "Could not open file " << argv[1] << endl;
-    return -1;
-  }
-
-  double learningRate;
-  if (!StringUtil::parse(string(argv[2]), &learningRate)) {
-    cerr << "Could not parse learning rate: " << argv[2] << endl;
-    return -1;
-  }
-
+void trainModel(LinearRegressionModel& model, fstream& stream) {
+  stream.seekg(0, ios::beg);
   string line;
-  // first read value names
-  getline(inputFile, line);
-  // The first feature name should be the target
-  vector<string> featureNames;
-  StringUtil::split(line, ',', &featureNames);
-  featureNames.push_back("Bias");
-  // We don't need the name of the target
-  featureNames.erase(featureNames.begin());
 
-  // The first weight will be the bias
-  vector<double> weights(featureNames.size());
+  // Ignore the first line
+  getline(stream, line);
 
-  LinearRegressionModel model;
-  model.initialize(featureNames, weights);
-  
   int64_t linesSkipped = 0;
-  while (getline(inputFile, line)) {
+  while (getline(stream, line)) {
     // Parse line
     vector<string> values;
     StringUtil::split(line, ',', &values);
@@ -69,9 +42,62 @@ int main(int argc, char** argv) {
     // This is for the bias
     example.push_back(1);
 
-    model.train(example, target, learningRate);
+    model.train(example, target);
+  }
+}
+
+int main(int argc, char** argv) {
+  if (argc < 4) {
+    cerr << "Usage: " << argv[0]
+         << " <input_file> <learning_rate> <weight_penalty> <num_data_passes>"
+         << endl;
+    return -1;
   }
 
+  fstream inputFile(argv[1]);
+  if (!inputFile.good()) {
+    cerr << "Could not open file " << argv[1] << endl;
+    return -1;
+  }
+
+  double learningRate;
+  if (!StringUtil::parse(string(argv[2]), &learningRate)) {
+    cerr << "Could not parse learning rate: " << argv[2] << endl;
+    return -1;
+  }
+
+  double weightPenalty;
+  if (!StringUtil::parse(string(argv[3]), &weightPenalty)) {
+    cerr << "Could not parse weight penalty: " << argv[3] << endl;
+    return -1;
+  }
+
+  int numberOfPasses = 1;
+  if (argc > 4 && StringUtil::parse(string(argv[4]), &numberOfPasses)) {
+    cerr << "Number of passes set to " << numberOfPasses << endl;
+  }
+  
+
+  string line;
+  // first read value names
+  getline(inputFile, line);
+  // The first feature name should be the target
+  vector<string> featureNames;
+  StringUtil::split(line, ',', &featureNames);
+  featureNames.push_back("Bias");
+  // We don't need the name of the target
+  featureNames.erase(featureNames.begin());
+
+  // The first weight will be the bias
+  vector<double> weights(featureNames.size());
+
+  LinearRegressionModel model;
+  model.initialize(featureNames, weights, weightPenalty, learningRate);
+
+  for (int i = 0; i < numberOfPasses; i++) {
+    trainModel(model, inputFile);
+  }
+  
   weights = model.getWeights();
   for (int i = 0; i < weights.size(); i++) {
     cout << featureNames[i] << kDelimiter

@@ -10,11 +10,12 @@ class LinearRegressionModel {
   explicit LinearRegressionModel() { }
 
   void initialize(std::vector<std::string>& names,
-                  std::vector<double>& weights);
+                  std::vector<double>& weights,
+                  double weightPenalty = 0, double learningRate = 0.001);
 
   bool setInputColumns(std::vector<std::string>& columns);
 
-  bool train(std::vector<double>& example, double target, double rate);
+  bool train(std::vector<double>& example, double target);
 
   bool predict(std::vector<double>& example, double* target);
 
@@ -23,4 +24,6 @@ class LinearRegressionModel {
  private:
   std::vector<std::string> featureNames_;
   std::vector<double> featureWeights_;
+  double weightPenalty_;
+  double learningRate_;
 };

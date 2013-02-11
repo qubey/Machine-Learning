@@ -1,13 +1,17 @@
 // Copyright 2013 Ruben Sethi.  All rights reserved.
 
-#include "Cardinality.h"
+#include "FeatureStats.h"
 #include "StringUtil.h"
 
 #include <iostream>
 
 using namespace std;
 
-void FeatureCardinality::addValue(string& value) {
+void FeatureStats::addValue(string& value, bool cleanse) {
+  if (cleanse) {
+    StringUtil::cleanse(&value);
+  }
+
   if (value.size() == 0) {
     return;
   }
@@ -51,15 +55,18 @@ void FeatureCardinality::addValue(string& value) {
   }
 
   if (values_.find(value) == values_.end()) {
-    values_.insert(value);
+    values_[value] = currentCardinality_++;
+    counts_[value] = 0;
+  } else {
+    counts_[value] += 1;
   }
 }
 
-size_t FeatureCardinality::getCardinality() const {
-  return values_.size() > maxCardinality_ ? -1 : values_.size();
+size_t FeatureStats::getCardinality() const {
+  return values_.size() >= maxCardinality_ ? -1 : values_.size();
 }
 
-std::string FeatureCardinality::getType() const {
+std::string FeatureStats::getType() const {
   string type = "String";
   if (integer_) {
     type = "Integer";
@@ -70,10 +77,19 @@ std::string FeatureCardinality::getType() const {
   return type;
 }
 
-pair<double, double> FeatureCardinality::getDoubleBounds() const {
+void FeatureStats::getFeatureValues(vector<string>* output) {
+  output->clear();
+  output->resize(currentCardinality_);
+
+  for (const auto& value : values_) {
+    (*output)[value.second] = value.first;
+  }
+}
+
+pair<double, double> FeatureStats::getDoubleBounds() const {
   return make_pair(minDouble_, maxDouble_);
 }
 
-pair<int, int> FeatureCardinality::getIntBounds() const {
+pair<int, int> FeatureStats::getIntBounds() const {
   return make_pair(minInt_, maxInt_);
 }

@@ -28,3 +28,27 @@ LinearRegression/train.sh
 LinearRegression/run.sh
 
 LinearRegression/predict
+
+.DS_Store
+
+Common/test
+
+Transform/analyze
+
+Transform/analyze.sh
+
+Transform/errlines.txt
+
+Transform/feature_stats
+
+Transform/fiManufacturerDesc.txt
+
+Transform/out.txt
+
+Transform/print
+
+Transform/print.sh
+
+Transform/stats.sh
+
+experiment.sh

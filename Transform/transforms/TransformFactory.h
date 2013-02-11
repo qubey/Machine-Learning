@@ -5,6 +5,8 @@
 #include "NormalizeTransform.h"
 #include "ExpandTransform.h"
 #include "DummyTransform.h"
+#include "DateTransform.h"
+#include "NGramTransform.h"
 
 #include <string>
 #include <vector>
@@ -21,6 +23,10 @@ class TransformFactory {
     if (cardinality == "LIMIT") {
       if (type == "String") {
         return std::make_shared<DummyTransform>(input);
+      } else if (type == "Date") {
+        return std::make_shared<DateTransform>(input);
+      } else if (type == "NGram") {
+        return std::make_shared<NGramTransform>(input);
       } else {
         return std::make_shared<NormalizeTransform>(input);
       }

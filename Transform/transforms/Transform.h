@@ -16,12 +16,14 @@ class Transform {
 
   std::string getName() const { return name_; }
 
-  virtual void execute(const std::string& value, int outputOffset,
+  virtual void execute(const std::string& value,
                        std::vector<double>* out) = 0;
 
   virtual int getNumOutputs() const = 0;
 
   virtual void getNames(std::vector<std::string>* names) const = 0;
+
+  int offset;
 
  protected:
   std::string name_;

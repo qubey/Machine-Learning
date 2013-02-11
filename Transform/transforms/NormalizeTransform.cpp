@@ -22,17 +22,16 @@ NormalizeTransform::NormalizeTransform(const vector<string>& input)
 }
 
 void NormalizeTransform::execute(const string& value,
-                                    int offset,
                                     vector<double>* out) {
-  if (offset >= out->size()) {
-    cerr << "Error (" << name_ << "): offset (" << offset
+  if (this->offset >= out->size()) {
+    cerr << "Error (" << name_ << "): offset (" << this->offset
          << ") larger than output vector (" << out->size() << ")" << endl;
     return;
   }
 
   double input;
   if (!StringUtil::parse(value, &input)) {
-    (*out)[offset] = 0;
+    (*out)[this->offset] = 0;
     return;
   }
 
@@ -40,9 +39,14 @@ void NormalizeTransform::execute(const string& value,
   if (transValue > 1) {
     cerr << "Error for " << name_ << ": value is " << transValue << ", "
          << "where min is " << min_ << " and max is " << max_ << endl;
+  } else if (transValue != transValue) {
+    cerr << name_ << ": value computed is NaN.  Original value " << input
+         << endl;
+    (*out)[this->offset] = 0;
+    return;
   }
 
-  (*out)[offset] = transValue;
+  (*out)[this->offset] = transValue;
 }
 
 int NormalizeTransform::getNumOutputs() const {

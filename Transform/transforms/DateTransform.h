@@ -1,10 +1,13 @@
+// Copyright 2013 Ruben Sethi.  All rights reserved
+#pragma once
+
 #include "Transform.h"
 
 #include <unordered_map>
 
-class ExpandTransform : public Transform {
+class DateTransform : public Transform {
  public:
-  explicit ExpandTransform(const std::vector<std::string>& input);
+  explicit DateTransform(const std::vector<std::string>& input);
 
   void execute(const std::string& value, std::vector<double>* out);
 
@@ -12,8 +15,6 @@ class ExpandTransform : public Transform {
 
   // This will only get filled after all of the data is processed
   void getNames(std::vector<std::string>* names) const;
-
  private:
-  std::unordered_map<std::string, int> values_;
-  int currentCount_;
+  bool includeMonth_;
 };

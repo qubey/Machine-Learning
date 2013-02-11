@@ -139,7 +139,12 @@ int main(int argc, char** argv) {
     }
 
     if (dataContainsTarget) {
-      meanSquaredErrorSum += (target - predicted) * (target - predicted);
+      if (predicted < 1) {
+        cerr << "Predicted lower than threshold: " << predicted << endl;
+        predicted = 1;
+      }
+      double difference = log(target / predicted);
+      meanSquaredErrorSum += difference * difference;
       count++;
 
       cout << target << ",";

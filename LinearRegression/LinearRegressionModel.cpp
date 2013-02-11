@@ -7,7 +7,11 @@
 using namespace std;
 
 void LinearRegressionModel::initialize(vector<string>& names,
-                                       vector<double>& weights) {
+                                       vector<double>& weights,
+                                       double weightPenalty,
+                                       double learningRate) {
+  learningRate_ = learningRate;
+  weightPenalty_ = weightPenalty;
   featureNames_ = names;
   featureWeights_ = weights;
 
@@ -54,8 +58,7 @@ bool LinearRegressionModel::setInputColumns(vector<string>& columns) {
   return true;
 }
 
-bool LinearRegressionModel::train(vector<double>& example, double target,
-                                  double rate) {
+bool LinearRegressionModel::train(vector<double>& example, double target) {
   if (example.size() != featureWeights_.size()) {
     cerr << "Training example size (" << example.size() << ") does not match "
          << "feature weight size (" << featureWeights_.size() << ")" << endl;
@@ -69,7 +72,8 @@ bool LinearRegressionModel::train(vector<double>& example, double target,
 
   for (int i = 0; i < example.size(); i++) {
     featureWeights_[i] = featureWeights_[i]
-                        + rate * (target - paren) * example[i];
+                        + learningRate_ * (target - paren) * example[i]
+                        - weightPenalty_ * featureWeights_[i];
   }
 
   return true;

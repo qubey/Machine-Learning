@@ -3,15 +3,16 @@
 #pragma once
 
 #include <string>
-#include <unordered_set>
+#include <vector>
+#include <unordered_map>
 
-class FeatureCardinality {
+class FeatureStats {
  public:
-  explicit FeatureCardinality(size_t max = 200)
+  explicit FeatureStats(size_t max = 200)
            : values_(), maxCardinality_(max), integer_(true), double_(true),
-             isFirst_(true) { }
+             isFirst_(true), currentCardinality_(0) { }
 
-  void addValue(std::string& value);
+  void addValue(std::string& value, bool cleanse = true);
 
   size_t getCardinality() const;
 
@@ -21,8 +22,15 @@ class FeatureCardinality {
 
   std::pair<int, int> getIntBounds() const;
 
+  void getFeatureValues(std::vector<std::string>* values);
+
+  const std::unordered_map<std::string, int>& getDistribution() {
+    return counts_;
+  }
+
  private:
-  std::unordered_set<std::string> values_;
+  std::unordered_map<std::string, int> values_;
+  std::unordered_map<std::string, int> counts_;
   size_t maxCardinality_;
   bool integer_;
   bool double_;
@@ -31,4 +39,5 @@ class FeatureCardinality {
   double minDouble_;
   int minInt_;
   bool isFirst_;
+  int currentCardinality_;
 };

@@ -9,37 +9,43 @@ using namespace std;
 
 ExpandTransform::ExpandTransform(const vector<string>& input)
               : Transform(input), currentCount_(0) {
-  if (cardinality_ < 1) {
+  if (!StringUtil::parse(input[2], &cardinality_)) {
+    cardinality_ = -1;
     cerr << "Error: bad cardinality for transform " << name_ << endl;
+    return;
+  }
+
+  for (int i = 3; i < input.size(); i++) {
+    values_[input[i]] = i - 3;
   }
 }
 
-void ExpandTransform::execute(const string& value,
-                              int offset,
+void ExpandTransform::execute(const string& input,
                               vector<double>* out) {
   if (cardinality_ < 1) {
     return;
   }
 
-  if (offset + cardinality_ - 1 >= out->size()) {
-    cerr << "Error (" << name_ << "): offset (" << offset << " + "
+  string value(input);
+  StringUtil::cleanse(&value);
+
+  if (this->offset + cardinality_ - 1 >= out->size()) {
+    cerr << "Error (" << name_ << "): offset (" << this->offset << " + "
          << cardinality_
          << ") larger than output vector (" << out->size() << ")" << endl;
     return;
   }
 
+  int mappedValue = -1;
   if (value.size() > 0 && values_.find(value) == values_.end()) {
-    values_[value] = currentCount_;
-    currentCount_++;
-    if (currentCount_ > cardinality_) {
-      cerr << "Error: map exceeded specified cardinality for feature "
-           << name_ << endl;
-    }
+    cerr << "Expand transform " << name_ << ": unrecognized value ("
+         << value << ")" << endl;
+  } else {
+    mappedValue = values_[value];
   }
 
-  int mappedValue = value.size() == 0 ? -1 : values_[value];
   for (int i = 0; i < cardinality_; i++) {
-    (*out)[offset + i] = i == mappedValue ? 1 : 0;
+    (*out)[this->offset + i] = i == mappedValue ? 1 : 0;
   }
 }
 
@@ -49,8 +55,14 @@ int ExpandTransform::getNumOutputs() const {
 
 void ExpandTransform::getNames(vector<string>* names) const {
   names->clear();
+  if (cardinality_ < 1) {
+    return;
+  }
 
+  names->resize(cardinality_);
   for (const auto& featureValue : values_) {
-    names->push_back(name_ + "_" + featureValue.first);
+    if (featureValue.second < cardinality_) {
+      (*names)[featureValue.second] = name_ + "_" + featureValue.first;
+    }
   }
 }
