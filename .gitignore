@@ -64,3 +64,9 @@ FeatureAnalysis/feature_stats
 FeatureAnalysis/analyze.sh
 
 FeatureAnalysis/analyze
+
+bin/headers/Matrix.h
+
+bin/headers/StringUtil.h
+
+bin/headers/Utils.h
