@@ -45,7 +45,8 @@ int main(int argc, char** argv) {
   vector<double> values;
   double target;
   double predicted;
-  double meanSquaredErrorSum = 0;
+  double logloss = 0;
+  int positiveExamples = 0;
   int count = 0;
   while (getline(cin, line)) {
     values.clear();
@@ -60,12 +61,13 @@ int main(int argc, char** argv) {
     }
 
     if (dataContainsTarget) {
-      if (predicted < 1) {
+      if (predicted < 0) {
         cerr << "Predicted lower than threshold: " << predicted << endl;
-        predicted = 1;
+        predicted = 0;
       }
-      double difference = log(target / predicted);
-      meanSquaredErrorSum += difference * difference;
+      logloss += target * (predicted == 0 ? log(0.001) : log(predicted))
+                 + (1 - target) * (1 - predicted == 0 ? log(0.001) : log(1 - predicted));
+      positiveExamples += target;
       count++;
 
       cout << target << ",";
@@ -74,7 +76,13 @@ int main(int argc, char** argv) {
   }
 
   if (dataContainsTarget) {
-    cerr << "RMSE: " << sqrt(meanSquaredErrorSum / count) << endl;
+    double pRate = ((double) positiveExamples) / count;
+    cerr << "Positive rate: " << pRate << endl;
+    cerr << "Log loss: " << logloss << endl;
+    cerr << "Normalized log loss: " << logloss / count << endl;
+    cerr << "Normalized entropy: "
+         << (logloss / count) 
+            / (pRate * log(pRate) + (1 - pRate) * log(1 - pRate)) << endl;
   }
 
   return 0;
