@@ -7,20 +7,5 @@
 
 class Predictor {
  public:
-  explicit Predictor(char delimiter = ',') : delimiter_(delimiter) { }
-
-  bool initializeModel(const char *modelFile);
-
-  bool parseCsvHeader();
-
-  bool parseExample(std::string& input, bool containsTarget,
-                    std::vector<double>* features, double* target);
-
-  bool setModel(RegressionModel* model) {
-    model_ = model;
-  }
-
- private:
-  RegressionModel* model_;
-  char delimiter_;
+  static bool initializeModel(const char *modelFile, RegressionModel* model);
 };

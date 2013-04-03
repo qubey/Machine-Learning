@@ -13,7 +13,7 @@ class RegressionModel {
                   std::vector<double>& weights,
                   double weightPenalty = 0, double learningRate = 0.001);
 
-  bool setInputColumns(std::vector<std::string>& columns);
+  bool setInputColumns(const std::vector<std::string>& columns);
 
   virtual bool train(std::vector<double>& example, double target) = 0;
 

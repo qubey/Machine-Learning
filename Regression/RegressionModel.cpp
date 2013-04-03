@@ -20,13 +20,14 @@ void RegressionModel::initialize(vector<string>& names,
   }
 }
 
-bool RegressionModel::setInputColumns(vector<string>& columns) {
+bool RegressionModel::setInputColumns(const vector<string>& columns) {
   unordered_map<string, int> indices;
   vector<string> fNames(columns.size());
   vector<double> fWeights(columns.size());
 
   if (columns.size() != featureNames_.size()) {
     cerr << "Mismatch input column size and model weight size!" << endl;
+    return false;
   }
 
   for (int i = 0; i < columns.size(); i++) {

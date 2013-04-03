@@ -1,6 +1,7 @@
 #include "StringUtil.h"
 #include "LinearRegressionModel.h"
 #include "Predictor.h"
+#include "ScalarParser.h"
 
 #include <fstream>
 #include <iostream>
@@ -21,17 +22,19 @@ int main(int argc, char** argv) {
   bool dataContainsTarget = argc == 3 && string(argv[2]) == "true";
   cerr << "Data contains target: " << dataContainsTarget << endl;
 
-  Predictor predictor;
   LinearRegressionModel model;
-
-  predictor.setModel(&model);
   // This initialization assumes the Bias is contained in the model definition
-  if (!predictor.initializeModel(argv[1])) {
+  if (!Predictor::initializeModel(argv[1], &model)) {
     cerr << "Could not initialize model" << endl;
     return -1;
   }
 
-  if (!predictor.parseCsvHeader()) {
+  ScalarParser parser;
+  if (!parser.parseCsvHeader(std::cin)) {
+    return -1;
+  }
+
+  if (!model.setInputColumns(parser.getColumns())) {
     return -1;
   }
 
@@ -49,7 +52,7 @@ int main(int argc, char** argv) {
   int count = 0;
   while (getline(cin, line)) {
     values.clear();
-    if (!predictor.parseExample(line, dataContainsTarget, &values, &target)) {
+    if (!parser.parseExample(line, dataContainsTarget, &values, &target)) {
       cerr << "Could not parse line: " << line << endl;
       continue;
     }
