@@ -3,120 +3,161 @@ import std.algorithm;
 import std.conv, std.container;
 import std.csv;
 
-import Transforms;
+import Parser;
+import FeatureTransforms;
 import Data;
 
-auto getData(string fileName) {
-  auto data = new DataSet;
-  string dataText = readText(fileName);
-  auto records = csvReader(dataText, null);
+class Transformer {
+  private DList!FeatureTransform transforms;
+  private int finalOutputSize;
+  private int totalVectorSize;
 
-  data.targetLabel = records.header[0];
-  data.featureLabels = records.header[1..records.header.length];
+  this(string[] inputFeatures, string configFile) {
+    TransformFactory.createTransforms(configFile, transforms);
 
-  foreach (recordObj; records) {
-    auto record = array(recordObj);
-    RawExample ex;
-    ex.target = to!int(record[0]);
-    ex.features.length = record.length - 1;
-    foreach (i, item; record[1..record.length]) {
-      ex.features[i] = FeatureValue( FeatureValueType.STRING, item, 0.0 );
+    initializeTransforms(inputFeatures, transforms, totalVectorSize, finalOutputSize);
+  }
+
+  void initializeTransforms(
+    string[] inputFeatures,
+    ref DList!FeatureTransform transforms,
+    out int totalSize,
+    out int outputSize
+  ) {
+    int[string] featureIndices;
+    int[string] featureSizes;
+    int currentFeatureIndex = 0;
+    foreach(flabel; inputFeatures) {
+      featureIndices[flabel] = cast(int)currentFeatureIndex;
+      featureSizes[flabel] = 1;
+      currentFeatureIndex += 1;
     }
-    data.examples.insertBack(ex);
-  }
 
-  return data;
-}
+    // Prepare the structures for representing the DAG
+    byte[string][string] dependencies;
+    byte[string][string] dependants;
+    FeatureTransform[string] transformMap;
+    foreach (t; transforms) {
+      transformMap[t.name] = t;
 
-void initializeTransforms(
-  const ref DataSet data,
-  ref DList!FeatureTransform transforms,
-  out int totalSize,
-  out int outputSize
-) {
-  int[string] featureIndices;
-  int[string] featureSizes;
-  int currentFeatureIndex = 0;
-  foreach(flabel; data.featureLabels) {
-    featureIndices[flabel] = cast(int)currentFeatureIndex;
-    featureSizes[flabel] = 1;
-    currentFeatureIndex += 1;
-  }
+      string[] deps =
+        array(filter!(a => (a in featureIndices) == null)(t.inputs));
 
-  // Prepare the structures for representing the DAG
-  byte[string][string] dependencies;
-  byte[string][string] dependants;
-  FeatureTransform[string] transformMap;
-  foreach (t; transforms) {
-    transformMap[t.name] = t;
+      byte[string] empty;
+      dependencies[t.name] = empty;
 
-    string[] deps =
-      array(filter!(a => (a in featureIndices) == null)(t.inputs));
-
-    byte[string] empty;
-    dependencies[t.name] = empty;
-
-    foreach (dep; deps) {
-      dependencies[t.name][dep] = 1;
-      dependants[dep][t.name] = 1;
+      foreach (dep; deps) {
+        dependencies[t.name][dep] = 1;
+        dependants[dep][t.name] = 1;
+      }
     }
-  }
-  writeln("Transform map: " ~ to!string(transformMap));
-  writeln("Dependencies: " ~ to!string(dependencies));
 
-  // Topological sort for the DAG of transforms
-  transforms.clear();
-  while (dependencies.length > 0) {
-    string[] processedTransforms;
-    foreach (name, deps; dependencies) {
-      if (deps.length != 0) {
-        continue;
+    // Topological sort for the DAG of transforms
+    transforms.clear();
+    while (dependencies.length > 0) {
+      string[] processedTransforms;
+      foreach (name, deps; dependencies) {
+        if (deps.length != 0) {
+          continue;
+        }
+
+        auto currentTrans = transformMap[name];
+        currentTrans.setOutputIndex(currentFeatureIndex);
+        transforms.insertBack(currentTrans);
+
+        featureIndices[name] = currentFeatureIndex;
+        featureSizes[name] = currentTrans.size();
+        currentFeatureIndex += currentTrans.size();
+
+        if (name in dependants) {
+          foreach (dependant; dependants[name].byKey()) {
+            dependencies[dependant].remove(name);
+          }
+        }
+
+        processedTransforms ~= name;
       }
 
-      auto currentTrans = transformMap[name];
-      currentTrans.setOutputIndex(currentFeatureIndex);
-      transforms.insertBack(currentTrans);
-      writeln("Inserted: " ~ to!string(currentTrans));
+      // Remove the nodes which we are done with
+      foreach (ptrans; processedTransforms) {
+        dependencies.remove(ptrans);
+      }
+    }
 
-      featureIndices[name] = currentFeatureIndex;
-      featureSizes[name] = currentTrans.size();
-      currentFeatureIndex += currentTrans.size();
+    outputSize = 0;
+    foreach (t; transforms) {
+      int[] depIndices; 
+      int[] depSizes;
+      depIndices.length = t.inputs.length;
+      depSizes.length = t.inputs.length;
 
-      if (name in dependants) {
-        foreach (dependant; dependants[name].byKey()) {
-          dependencies[dependant].remove(name);
+      foreach (i, dep; t.inputs) {
+        depIndices[i] = featureIndices[dep];
+        depSizes[i] = featureSizes[dep];
+      }
+
+      t.setInputs(depIndices, depSizes);
+
+      if (t.includeInOutput) {
+        outputSize += t.size();
+      }
+    }
+
+    totalSize = currentFeatureIndex;
+  }
+
+  void preprocess(DataSet data) {
+    // Let the transforms do a first pass on the data for finding the best
+    // transform values
+    foreach (example; data.examples) {
+      foreach (t; transforms) {
+        t.process(example.features);
+      }
+    }
+
+    // Signal the transformations to do any final processing
+    foreach (t; transforms) {
+      t.finalize();
+    }
+  }
+
+  void transform(RawExample ex, out TransformedExample transex) {
+    transex.features.length = finalOutputSize;
+    allFeatures.length = totalVectorSize;
+
+    allFeatures[0..ex.features.length] = ex.features[];
+    allFeatures[ex.features.length..$] = FeatureValue(
+      FeatureValueType.DOUBLE,
+      null,
+      0.0
+    );
+
+    int outIndex = 0; 
+    foreach(t; transforms) {
+      t.transform(allFeatures);
+
+      // Check whether we need to include this transform in the output vector
+      // We also assume that the output of the transformation is numerical
+      if (t.includeInOutput) {
+        foreach (i; 0 .. t.size()) {
+          transex.features[outIndex++] =
+            allFeatures[t.outputStartIndex + i].numval;
         }
       }
-
-      processedTransforms ~= name;
     }
 
-    // Remove the nodes which we are done with
-    foreach (ptrans; processedTransforms) {
-      dependencies.remove(ptrans);
+    transex.target = ex.target;
+  }
+
+  void transformSet(DataSet data, out TransformedDataSet output) {
+    output.examples.length = data.examples.length;
+
+    foreach (i, example; data.examples) {
+      transform(example, output.examples[i]);
     }
   }
 
-  outputSize = 0;
-  foreach (t; transforms) {
-    int[] depIndices; 
-    int[] depSizes;
-    depIndices.length = t.inputs.length;
-    depSizes.length = t.inputs.length;
-
-    foreach (i, dep; t.inputs) {
-      depIndices[i] = featureIndices[dep];
-      depSizes[i] = featureSizes[dep];
-    }
-
-    t.setInputs(depIndices, depSizes);
-
-    if (t.includeInOutput) {
-      outputSize += t.size();
-    }
-  }
-
-  totalSize = currentFeatureIndex;
+  private FeatureVector allFeatures;
 }
 
 int main(string args[]) {
@@ -125,57 +166,17 @@ int main(string args[]) {
     return -1;
   }
 
-  auto data = getData(args[1]);
+  auto data = Parser.Parser.parseCsvFile(args[1]);
+  auto transformer = new Transformer(data.featureLabels, args[2]);
+  transformer.preprocess(data);
 
-  DList!FeatureTransform transforms;
-  TransformFactory.createTransforms(args[2], transforms);
-  writeln("Transforms size 1: " ~ to!string(transforms));
-  int outSize;
-  int totalSize;
-  initializeTransforms(*data, transforms, totalSize, outSize);
-  writeln("Transforms size 2: " ~ to!string(transforms));
-
-  
-  // Let the transforms do a first pass on the data for finding the best
-  // transform values
-  foreach (example; data.examples) {
-    foreach (t; transforms) {
-      t.process(example.features);
-    }
-  }
-
-  // Signal the transformations to do any final processing
-  foreach (t; transforms) {
-    t.finalize();
-  }
+  TransformedDataSet transdata;
+  transformer.transformSet(data, transdata);
 
   const char delim = ',';
-  FeatureVector transformedFeatures;
-  double[] output;
-  transformedFeatures.length = totalSize;
-  output.length = outSize;
-  foreach (example; data.examples) {
-    transformedFeatures[0..example.features.length] = example.features[];
-    transformedFeatures[example.features.length..$] = FeatureValue(
-      FeatureValueType.DOUBLE,
-      null,
-      0.0
-    );
-
-    int outIndex = 0;
-    foreach(t; transforms) {
-      t.transform(transformedFeatures);
-
-      if (t.includeInOutput) {
-        foreach (i; 0 .. t.size()) {
-          output[outIndex++] =
-            transformedFeatures[t.outputStartIndex + i].numval;
-        }
-      }
-    }
-
+  foreach(example; transdata.examples) {
     write(example.target);
-    foreach (value; output) {
+    foreach (value; example.features) {
       write(delim, value);
     }
     writeln();

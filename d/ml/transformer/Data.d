@@ -16,12 +16,22 @@ struct FeatureValue {
 alias FeatureVector = FeatureValue[];
 
 struct RawExample {
-  int target;
+  double target;
   FeatureVector features;
 }
 
 struct DataSet {
-  DList!RawExample examples;
+  RawExample[] examples;
   string targetLabel;
+  string[] featureLabels;
+}
+
+struct TransformedExample {
+  double[] features;
+  double target;
+}
+
+struct TransformedDataSet {
+  TransformedExample[] examples;
   string[] featureLabels;
 }
