@@ -11,6 +11,7 @@ import std.string;
 import std.range;
 
 import Data;
+import stringutil;
 
 // Base class for all transformations
 class FeatureTransform {
@@ -133,8 +134,6 @@ class NormalizeTransform : FeatureTransform {
 // Tokenizes the feature and takes the highest N occurring words
 // to transform the input string into N boolean features
 class BagOfWordsTransform : FeatureTransform {
-  private const auto kIgnoreWords =
-    r"^(from|by|has|or|of|a|an|the|it|its)$";
   private struct Token {
     string name;
     int count;
@@ -155,7 +154,7 @@ class BagOfWordsTransform : FeatureTransform {
     string[] tokens = getTokens(ex);
 
     foreach (token; tokens) {
-      if (token.empty || match(token, kIgnoreWords)) continue;
+      if (token.empty) continue;
 
       if (token in tokenCounts) {
         tokenCounts[token].count += 1;
@@ -210,11 +209,6 @@ class BagOfWordsTransform : FeatureTransform {
 
     string[] tokens = scrub(fval.strval);
     return tokens;
-  }
-
-  private string[] scrub(string rawInput) {
-    auto input = removechars(toLower(rawInput), ",.()\"\':");
-    return split(input);
   }
 }
 
