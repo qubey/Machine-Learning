@@ -1,5 +1,5 @@
-./bin/transformer/Transformer /Users/rsethi/kaggle/titanic/train.csv /Users/rsethi/d/ml/transforms_titanic.json
+./bin/transformer/Transformer ${DATA_DIR}/titanic/train.csv ${D_MAKE_ROOT}/transforms_titanic.json
 
-#./bin/transformer/Transformer /Users/rsethi/kaggle/insults/train.csv /Users/rsethi/d/ml/transforms_insults.json
+#./bin/transformer/Transformer ${DATA_DIR}/insults/train.csv ${D_MAKE_ROOT}/transforms_insults.json
 
-#./bin/transformer/Transformer /Users/rsethi/kaggle/bulldozer/train2.csv /Users/rsethi/d/ml/transforms_bulldozer.json
+#./bin/transformer/Transformer ${DATA_DIR}/bulldozer/train2.csv ${D_MAKE_ROOT}/transforms_bulldozer.json
