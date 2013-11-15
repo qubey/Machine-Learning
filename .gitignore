@@ -81,3 +81,5 @@ Regression/run.sh
 Regression/logistic_predict
 
 Regression/logistic_train
+
+d/ml/bin
