@@ -1,0 +1,28 @@
+{
+  "transforms": [
+    {
+      "name": "age_norm",
+      "type": "normalize",
+      "input": [ "age" ]
+    },
+    {
+      "name": "fare_norm",
+      "type": "normalize",
+      "output": true,
+      "input": [ "fare" ]
+    },
+    {
+      "name": "name_word",
+      "type": "words",
+      "max_card": 3,
+      "output": true,
+      "input": [ "name" ]
+    },
+    {
+      "name": "other",
+      "type": "exp",
+      "output": true,
+      "input": [ "age_norm" ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+Transforms:
+1. Bag of words
+3. ngram transform
+5. Bucket

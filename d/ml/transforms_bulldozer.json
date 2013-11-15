@@ -1,0 +1,20 @@
+{
+  "transforms": [
+    {
+      "name": "model_words",
+      "type": "words",
+      "max_card": 200,
+      "input": [ "ModelID" ]
+    },
+    {
+      "name": "year_norm",
+      "type": "normalize",
+      "input": [ "YearMade" ]
+    },
+    {
+      "name": "hours_norm",
+      "type": "normalize",
+      "input": [ "MachineHoursCurrentMeter" ]
+    }
+  ]
+}
