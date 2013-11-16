@@ -1,5 +1,5 @@
 Transforms:
-1. ngram transform
+1. Implement bucketing algorithm
 3. make mutual information tool for features
 5. start implementing models (linear/logistic regression, decision trees)
 

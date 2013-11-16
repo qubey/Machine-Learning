@@ -4,7 +4,7 @@
       "name": "age_norm",
       "type": "normalize",
       "input": [ "age" ],
-      "output": true
+      "output": false
     },
     {
       "name": "fare_norm",
@@ -29,8 +29,15 @@
       "name": "age_norm_gt",
       "type": "greater_than",
       "input": [ "age_norm" ],
-      "output": true,
+      "output": false,
       "threshold": 0.2
+    },
+    {
+      "name": "age_norm_qb",
+      "type": "quantile_bucket",
+      "input": [ "age" ],
+      "buckets": 7,
+      "output": true
     }
   ]
 }

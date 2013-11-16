@@ -6,7 +6,7 @@ import std.conv, std.container;
 import std.csv;
 
 import transform.parser;
-import transform.featuretransforms;
+import transform.factory;
 import transform.data;
 
 class Transformer {
