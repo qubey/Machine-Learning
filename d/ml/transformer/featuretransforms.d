@@ -10,7 +10,7 @@ import std.array;
 import std.string;
 import std.range;
 
-import Data;
+import data;
 import stringutil;
 
 // Base class for all transformations

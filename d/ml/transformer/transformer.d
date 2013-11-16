@@ -3,9 +3,9 @@ import std.algorithm;
 import std.conv, std.container;
 import std.csv;
 
-import Parser;
-import FeatureTransforms;
-import Data;
+import parser;
+import featuretransforms;
+import data;
 
 class Transformer {
   private DList!FeatureTransform transforms;

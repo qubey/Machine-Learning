@@ -1,7 +1,7 @@
 import std.stdio;
-import Data;
-import Transformer;
-import Parser;
+import data;
+import transformer;
+import parser;
 
 int main(string args[]) {
   if (args.length != 3) {
@@ -9,7 +9,7 @@ int main(string args[]) {
     return -1;
   }
 
-  auto data = Parser.Parser.parseCsvFile(args[1]);
+  auto data = Parser.parseCsvFile(args[1]);
   auto transformer = new Transformer(data.featureLabels, args[2]);
   transformer.preprocess(data);
 
