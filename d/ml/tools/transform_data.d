@@ -1,7 +1,10 @@
+module tools.transformdata;
+
 import std.stdio;
-import data;
-import transformer;
-import parser;
+
+import transform.data;
+import transform.transformer;
+import transform.parser;
 
 int main(string args[]) {
   if (args.length != 3) {

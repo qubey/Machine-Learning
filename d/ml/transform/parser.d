@@ -1,3 +1,5 @@
+module transform.parser;
+
 import std.csv;
 import std.conv;
 import std.array;
@@ -5,7 +7,7 @@ import std.stdio;
 import std.container;
 import std.file;
 
-import data;
+import transform.data;
 
 class Parser {
   static DataSet parseCsvFile(string fileName) {

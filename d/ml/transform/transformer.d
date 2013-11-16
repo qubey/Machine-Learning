@@ -1,11 +1,13 @@
+module transform.transformer;
+
 import std.range, std.stdio, std.file;
 import std.algorithm;
 import std.conv, std.container;
 import std.csv;
 
-import parser;
-import featuretransforms;
-import data;
+import transform.parser;
+import transform.featuretransforms;
+import transform.data;
 
 class Transformer {
   private DList!FeatureTransform transforms;

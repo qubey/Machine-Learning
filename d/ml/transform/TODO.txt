@@ -1,0 +1,6 @@
+Transforms:
+1. ngram transform
+2. add names for transformed feature values
+3. make mutual information tool for features
+4. make tool for auto-filtering shitty examples (rule-based)
+5. start implementing models (linear/logistic regression, decision trees)

@@ -1,3 +1,5 @@
+module util.stringutil;
+
 import std.regex;
 import std.algorithm;
 import std.string;
