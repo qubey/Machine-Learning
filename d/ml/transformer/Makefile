@@ -1,8 +1,8 @@
 output = ${D_MAKE_ROOT}/bin/transformer
-util_dir = ${D_MAKE_ROOT}/util
+include_dir = ${D_MAKE_ROOT}/bin
 all:
 	mkdir -p $(output)
-	dmd *.d $(util_dir)/*.d \
+	dmd *.d $(include_dir)/util/libutil.a \
     -of$(output)/Transformer -I${D_MAKE_ROOT}
 
 clean:
