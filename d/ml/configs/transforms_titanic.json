@@ -3,26 +3,34 @@
     {
       "name": "age_norm",
       "type": "normalize",
-      "input": [ "age" ]
+      "input": [ "age" ],
+      "output": true
     },
     {
       "name": "fare_norm",
       "type": "normalize",
-      "output": true,
+      "output": false,
       "input": [ "fare" ]
     },
     {
       "name": "name_word",
       "type": "words",
       "max_card": 3,
-      "output": true,
+      "output": false,
       "input": [ "name" ]
     },
     {
-      "name": "other",
-      "type": "exp",
+      "name": "name_fare_ngram",
+      "type": "ngram",
+      "output": false,
+      "input": [ "fare_norm", "name_word" ]
+    },
+    {
+      "name": "age_norm_gt",
+      "type": "greater_than",
+      "input": [ "age_norm" ],
       "output": true,
-      "input": [ "age_norm" ]
+      "threshold": 0.2
     }
   ]
 }

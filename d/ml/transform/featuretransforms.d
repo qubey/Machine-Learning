@@ -59,10 +59,21 @@ class FeatureTransform {
   abstract int size();
 
   protected bool getInputDouble(ref FeatureVector ex, out double val) {
-    // If the input is a dobule, we know we should only have one input index
     assert(inputFeatureIndices.length == 1);
+    return getInputDouble(ex, 0, 0, val);
+  }
 
-    auto inval = ex[inputFeatureIndices[0]];
+  protected bool getInputDouble(
+    ref FeatureVector ex,
+    int feature,
+    int offset,
+    out double val
+  ) {
+    assert(feature >= 0);
+    assert(feature < inputs.length);
+    assert(offset < inputSizes[feature]);
+
+    auto inval = ex[inputFeatureIndices[feature] + offset];
     try {
       val = inval.type == FeatureValueType.STRING ?
         to!double(inval.strval) : inval.numval;
@@ -86,8 +97,8 @@ class FeatureTransform {
     );
   }
 
-  private int[] inputFeatureIndices;
-  private int[] inputSizes;
+  protected int[] inputFeatureIndices;
+  protected int[] inputSizes;
 }
 
 // Normalizes a feature to be in the range [0,1]
@@ -214,10 +225,64 @@ class BagOfWordsTransform : FeatureTransform {
   }
 }
 
-/*
 class NgramTransform : FeatureTransform {
+  private int outSize;
+ 
+  this(JSONValue config) {
+    super(config);
+    assert(inputs.length > 1);
+  }
+
+  override void setInputs(int[] indices, int[] sizes) {
+    super.setInputs(indices, sizes);
+    outSize = 1;
+    foreach (insize; inputSizes) {
+      outSize *= insize;
+    }
+  }
+
+  override void process(ref FeatureVector ex) { }
+  override void finalize() { }
+
+  override bool transform(ref FeatureVector ex) {
+    assert(ex.length == outputStartIndex + size());
+
+    int[] curIndices;
+    curIndices.length = inputs.length;
+
+    int outIndex = 0;
+    while (outIndex < outSize) {
+      double val = 1.0;
+      foreach (i, idx; curIndices) {
+        double fval = 0;
+        if (!getInputDouble(ex, cast(int)i, idx, fval)) {
+          return false;
+        }
+        val *= fval;
+        if (val == 0.0) break;
+      }
+      setOutputValue(ex, outIndex, val);
+      outIndex++;
+
+      // increment the indices for the next value
+      bool carry = true;
+      int carryIndex = 0;
+      while (carry) {
+        curIndices[carryIndex] += 1;
+        curIndices[carryIndex] %= inputSizes[carryIndex];
+
+        carry = curIndices[carryIndex] == 0 && carryIndex < inputs.length - 1;
+        carryIndex++;
+      }
+    }
+
+    return true;
+  }
+
+  override int size() {
+    return outSize;
+  }
 }
-*/
 
 // Leaves the feature unchanged (just copies it to the output vector)
 class IdentityTransform : FeatureTransform {
@@ -304,6 +369,32 @@ class InverseTransform : FeatureTransform {
   override int size() { return 1; }
 }
 
+class GreaterThanTransform : FeatureTransform {
+  private double threshold;
+
+  this(JSONValue config) {
+    super(config);
+    assert(inputs.length == 1);
+    assert("threshold" in config.object);
+
+    auto node = config.object["threshold"];
+    assert(node.type == JSON_TYPE.FLOAT);
+    threshold = cast(double)node.floating;
+  }
+  override void process(ref FeatureVector ex) { }
+  override void finalize() { }
+
+  override bool transform(ref FeatureVector ex) {
+    double value;
+    bool success = getInputDouble(ex, value) && value != 0;
+    if (success) {
+      setOutputValue(ex, 0, value > threshold ? 1.0 : 0.0);
+    }
+    return success;
+  }
+  override int size() { return 1; }
+}
+
 class TransformFactory {
   static void createTransforms(
     string jsonConfigFile,
@@ -343,6 +434,12 @@ class TransformFactory {
           break;
         case "normalize":
           transform = new NormalizeTransform(node);
+          break;
+        case "ngram":
+          transform = new NgramTransform(node);
+          break;
+        case "greater_than":
+          transform = new GreaterThanTransform(node);
           break;
         default:
           writeln("Unkown transform: " ~ transformType);

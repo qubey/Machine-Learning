@@ -59,22 +59,30 @@ class Transformer {
       }
     }
 
+    // Do a sanity check to make sure all of the dependencies exist
+    foreach (name, deps; dependencies) {
+      foreach (depName; deps.byKey()) {
+        if (depName !in featureIndices && depName !in transformMap) {
+          writeln("Could not find input " ~ depName ~ " for transform " ~
+                  name);
+          assert(false);
+        }
+      }
+    }
+
     // Topological sort for the DAG of transforms
     transforms.clear();
     while (dependencies.length > 0) {
       string[] processedTransforms;
+      bool foundNode = false;
       foreach (name, deps; dependencies) {
         if (deps.length != 0) {
           continue;
         }
+        foundNode = true;
 
         auto currentTrans = transformMap[name];
-        currentTrans.setOutputIndex(currentFeatureIndex);
         transforms.insertBack(currentTrans);
-
-        featureIndices[name] = currentFeatureIndex;
-        featureSizes[name] = currentTrans.size();
-        currentFeatureIndex += currentTrans.size();
 
         if (name in dependants) {
           foreach (dependant; dependants[name].byKey()) {
@@ -83,6 +91,12 @@ class Transformer {
         }
 
         processedTransforms ~= name;
+      }
+
+      // Check for circular dependencies
+      if (!foundNode) {
+        writeln("Circular dependency found.");
+        assert(false);
       }
 
       // Remove the nodes which we are done with
@@ -104,6 +118,11 @@ class Transformer {
       }
 
       t.setInputs(depIndices, depSizes);
+      t.setOutputIndex(currentFeatureIndex);
+
+      featureIndices[t.name] = currentFeatureIndex;
+      featureSizes[t.name] = t.size();
+      currentFeatureIndex += t.size();
 
       if (t.includeInOutput) {
         outputSize += t.size();
