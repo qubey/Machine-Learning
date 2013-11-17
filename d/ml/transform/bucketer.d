@@ -67,6 +67,17 @@ class BucketTransform : FeatureTransform {
     }
   }
 
+  override string[] getOutputNames() {
+    string[] results;
+    results.length = buckets;
+
+    foreach(i; 0 .. buckets) {
+      results[i] = name ~ "_" ~ to!string(i);
+    }
+
+    return results;
+  }
+
   override bool requiresPreprocess() {
     return boundaries.length == 0;
   }

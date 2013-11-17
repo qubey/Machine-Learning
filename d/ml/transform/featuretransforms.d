@@ -104,6 +104,7 @@ class FeatureTransform {
   abstract void finalize();
   abstract bool transform(ref FeatureVector ex);
   abstract int size();
+  abstract string[] getOutputNames();
 
   protected bool getInputDouble(ref FeatureVector ex, out double val) {
     assert(inputFeatureIndices.length == 1);
@@ -165,6 +166,10 @@ class NormalizeTransform : FeatureTransform {
       max = cast(double)infoNode.object["max"].floating;
       initialized = true;
     }
+  }
+
+  override string[] getOutputNames() {
+    return [ name ];
   }
 
   override string getTypeName() { return "normalize"; }
@@ -244,6 +249,16 @@ class BagOfWordsTransform : FeatureTransform {
         tokenIndices[token] = cast(int)indexNode.integer;
       }
     }
+  }
+
+  override string[] getOutputNames() {
+    string[] result;
+    result.length = tokenIndices.length;
+    foreach (token, index; tokenIndices) {
+      result[index] = name ~ "_" ~ token;
+    }
+
+    return result;
   }
 
   override string getTypeName() { return "words"; }
@@ -355,6 +370,15 @@ class NgramTransform : FeatureTransform {
     }
   }
 
+  override string[] getOutputNames() {
+    string[] result;
+    result.length = size();
+    foreach (i; 0 .. size()) {
+      result[i] = name ~ "_" ~ to!string(i);
+    }
+    return result;
+  }
+
   override void process(ref FeatureVector ex) { }
   override void finalize() { }
 
@@ -405,6 +429,8 @@ class IdentityTransform : FeatureTransform {
     assert(inputs.length == 1);
   }
 
+  override string[] getOutputNames() { return [ name ]; }
+
   override string getTypeName() { return "id"; }
 
   override void process(ref FeatureVector ex) { }
@@ -429,6 +455,7 @@ class LogTransform : FeatureTransform {
     super(config);
     assert(inputs.length == 1);
   }
+  override string[] getOutputNames() { return [ name ]; }
 
   override string getTypeName() { return "log"; }
 
@@ -455,6 +482,7 @@ class ExpTransform : FeatureTransform {
     super(config);
     assert(inputs.length == 1);
   }
+  override string[] getOutputNames() { return [ name ]; }
 
   override string getTypeName() { return "exp"; }
 
@@ -478,6 +506,7 @@ class InverseTransform : FeatureTransform {
     assert(inputs.length == 1);
   }
 
+  override string[] getOutputNames() { return [ name ]; }
   override string getTypeName() { return "inverse"; }
   override void process(ref FeatureVector ex) { }
   override void finalize() { }
@@ -515,6 +544,7 @@ class GreaterThanTransform : FeatureTransform {
     config.object["threshold"] = thresholdNode;
   }
 
+  override string[] getOutputNames() { return [ name ]; }
   override string getTypeName() { return "greater_than"; }
 
   override void process(ref FeatureVector ex) { }

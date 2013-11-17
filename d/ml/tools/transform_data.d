@@ -1,6 +1,8 @@
 module tools.transformdata;
 
 import std.stdio;
+import std.range;
+import std.algorithm;
 
 import common.data;
 import common.parser;
@@ -24,7 +26,15 @@ int main(string args[]) {
   TransformedDataSet transdata;
   transformer.transformSet(data, transdata);
 
-  const char delim = ',';
+  const string delim = ",";
+  // output the labels first
+  auto labels = [ data.targetLabel ];
+  foreach (t; transformer.getTransforms()) {
+    labels = array(chain(labels, t.getOutputNames()));
+  }
+  writeln(joiner(labels, delim));
+
+  // output the transformed data
   foreach(example; transdata.examples) {
     write(example.target);
     foreach (value; example.features) {
