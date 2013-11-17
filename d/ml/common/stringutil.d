@@ -1,4 +1,4 @@
-module util.stringutil;
+module common.stringutil;
 
 import std.regex;
 import std.algorithm;

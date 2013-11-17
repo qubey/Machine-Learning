@@ -13,7 +13,7 @@ import std.string;
 import std.range;
 
 import transform.data;
-import util.stringutil;
+import common.stringutil;
 
 // Base class for all transformations
 class FeatureTransform {

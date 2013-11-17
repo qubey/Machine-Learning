@@ -1,9 +1,13 @@
 Transforms:
-1. Implement bucketing algorithm
-3. make mutual information tool for features
-5. start implementing models (linear/logistic regression, decision trees)
+1. Naive Bayes
+2. LDA
+3. Linear regression (MLE, ridge, bayesian)
+4. Logistic regression
+5. decision trees
+6. Boosting
 
 Fuck:
+1. Implement bucketing algorithm
 2. add names for transformed feature values
-4. make tool for auto-filtering shitty examples (rule-based)
+3. make tool for auto-filtering shitty examples (rule-based)
 

@@ -1,5 +1,5 @@
 bin = ${D_MAKE_ROOT}/bin
-libs = $(bin)/util/libutil.a $(bin)/transform/libtransform.o
+libs = $(bin)/common/libcommon.o $(bin)/transform/libtransform.o
 include_flags = -I${D_MAKE_ROOT}
 out_dir = $(bin)/tools
 

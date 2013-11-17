@@ -1,6 +1,6 @@
 output = ${D_MAKE_ROOT}/bin/transform
 bin_dir = ${D_MAKE_ROOT}/bin
-libs = $(bin_dir)/util/libutil.a
+libs = $(bin_dir)/common/libcommon.o
 include_flags = -I${D_MAKE_ROOT}
 
 all:
