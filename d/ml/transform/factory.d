@@ -18,9 +18,7 @@ class TransformFactory {
     try {
       jsonRoot = parseJSON(jsonText);
     } catch (Exception e) {
-      writeln(&stderr, "Error reading JSON:");
-      writeln(&stderr, e.msg);
-      return;
+      assert(false, "Error reading JSON: " ~ e.msg);
     }
 
     JSONValue transformArray = jsonRoot.object["transforms"];
@@ -58,7 +56,7 @@ class TransformFactory {
           transform = new QuantileBucketTransform(node);
           break;
         default:
-          writeln("Unkown transform: " ~ transformType);
+          assert(false, "Unkown transform: " ~ transformType);
           continue;
       }
 

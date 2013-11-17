@@ -7,6 +7,10 @@ all:
 	mkdir -p $(out_dir)
 	dmd transform_data.d $(libs) -of$(out_dir)/transform_data $(include_flags)
 	dmd mutual_info.d $(libs) -of$(out_dir)/mutual_info $(include_flags)
+	dmd process_transforms.d $(libs) -of$(out_dir)/process_transforms \
+    $(include_flags)
+	dmd validate_transforms.d $(libs) -of$(out_dir)/validate_transforms \
+    $(include_flags)
 
 clean:
 	rm -f $(out_dir)/*

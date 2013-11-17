@@ -10,20 +10,20 @@
       "name": "fare_qb",
       "type": "quantile_bucket",
       "buckets": 10,
-      "output": true,
+      "output": false,
       "input": [ "fare" ]
     },
     {
       "name": "name_word",
       "type": "words",
       "max_card": 3,
-      "output": true,
+      "output": false,
       "input": [ "name" ]
     },
     {
       "name": "name_age_ngram",
       "type": "ngram",
-      "output": false,
+      "output": true,
       "input": [ "age_qb", "name_word" ]
     },
     {
@@ -38,7 +38,7 @@
       "type": "quantile_bucket",
       "input": [ "age" ],
       "buckets": 15,
-      "output": true
+      "output": false
     }
   ]
 }

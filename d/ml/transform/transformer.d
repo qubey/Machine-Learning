@@ -1,28 +1,45 @@
 module transform.transformer;
 
+import std.json;
 import std.range, std.stdio, std.file;
 import std.algorithm;
 import std.conv, std.container;
 import std.csv;
 
-import transform.parser;
+import common.data;
 import transform.factory;
-import transform.data;
 
 class Transformer {
   private DList!FeatureTransform transforms;
   private int finalOutputSize;
   private int totalVectorSize;
 
-  this(string[] inputFeatures, string configFile) {
+  this(string configFile) {
     TransformFactory.createTransforms(configFile, transforms);
+  }
 
+  this(string[] inputFeatures, string configFile) {
+    this(configFile);
+    initializeTransforms(inputFeatures);
+  }
+
+  void initializeTransforms(string[] inputFeatures) {
     initializeTransforms(
       inputFeatures,
       transforms,
       totalVectorSize,
       finalOutputSize
     );
+  }
+
+  bool shouldPreprocess() {
+    foreach (t; transforms) {
+      if (t.requiresPreprocess()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   auto getTransforms() {
@@ -185,6 +202,34 @@ class Transformer {
 
     foreach (i, example; data.examples) {
       transform(example, output.examples[i]);
+    }
+  }
+
+  void saveTransforms(string filename) {
+    JSONValue initialRoot;
+    try {
+      string initialJsonText = readText(filename);
+      initialRoot = parseJSON(initialJsonText);
+      assert(initialRoot.type == JSON_TYPE.OBJECT,
+             "Existing JSON root node must be object for JSON serialize");
+    } catch (Exception e) {
+      initialRoot.type = JSON_TYPE.OBJECT;
+    }
+
+    try {
+      JSONValue transformNode;
+      transformNode.type = JSON_TYPE.ARRAY;
+      foreach (t; transforms) {
+        JSONValue tconf;
+        t.save(tconf);
+        transformNode.array ~= tconf;
+      }
+
+      initialRoot.object["transforms"] = transformNode;
+
+      std.file.write(filename, toJSON(&initialRoot));
+    } catch (Exception e) {
+      assert(false, "Error writing JSON: " ~ e.msg);
     }
   }
 

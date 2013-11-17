@@ -12,7 +12,7 @@ import std.array;
 import std.string;
 import std.range;
 
-import transform.data;
+import common.data;
 import common.stringutil;
 
 // Base class for all transformations
@@ -36,6 +36,7 @@ class FeatureTransform {
     foreach (i, node; inputNode.array) {
       inputs[i] = node.str;
     }
+    sort(inputs);
 
     if ("output" in config.object) {
       auto outputNode = config.object["output"];
@@ -43,9 +44,44 @@ class FeatureTransform {
     }
   }
 
+  void save(ref JSONValue config) {
+    config.type = JSON_TYPE.OBJECT;
+    JSONValue nameNode;
+    nameNode.type = JSON_TYPE.STRING;
+    nameNode.str = name;
+    config.object["name"] = nameNode;
+
+    JSONValue typeNode;
+    typeNode.type = JSON_TYPE.STRING;
+    typeNode.str = getTypeName();
+    config.object["type"] = typeNode;
+
+    SList!JSONValue inputItems;
+    foreach (input; inputs) {
+      JSONValue val;
+      val.type = JSON_TYPE.STRING;
+      val.str = input;
+      inputItems.insert(val);
+    }
+
+    JSONValue inputNode;
+    inputNode.type = JSON_TYPE.ARRAY;
+    inputNode.array = array(inputItems[]);
+    config.object["input"] = inputNode;
+
+    JSONValue outputNode;
+    outputNode.type = (includeInOutput ? JSON_TYPE.TRUE : JSON_TYPE.FALSE);
+    config.object["output"] = outputNode;
+  }
+
+  bool requiresPreprocess() {
+    return false;
+  }
+
   void setInputs(int[] indices, int[] sizes) {
     assert(indices.length == inputs.length);
     assert(sizes.length == indices.length);
+
     inputFeatureIndices = indices;
     inputSizes = sizes;
   }
@@ -61,6 +97,8 @@ class FeatureTransform {
   void process(ref FeatureVector ex, double target) {
     process(ex);
   }
+
+  abstract string getTypeName();
 
   abstract void process(ref FeatureVector ex);
   abstract void finalize();
@@ -120,7 +158,20 @@ class NormalizeTransform : FeatureTransform {
     super(config);
     initialized = false;
     assert(inputs.length == 1);
+
+    if ("info" in config.object) {
+      auto infoNode = config.object["info"];
+      assert(infoNode.type == JSON_TYPE.OBJECT,
+             "Info node of wrong type for " ~ name);
+      assert("min" in infoNode.object, "Min not found for transform " ~ name);
+      assert("max" in infoNode.object, "Max not found for transform " ~ name);
+      min = cast(double)infoNode.object["min"].floating;
+      max = cast(double)infoNode.object["max"].floating;
+      initialized = true;
+    }
   }
+
+  override string getTypeName() { return "normalize"; }
 
   override void process(ref FeatureVector ex) {
     double value;
@@ -151,6 +202,26 @@ class NormalizeTransform : FeatureTransform {
   }
 
   override int size() { return 1; }
+
+  override bool requiresPreprocess() {
+    return !initialized;
+  }
+
+  override void save(ref JSONValue writeConfig) {
+    super.save(writeConfig);
+
+    JSONValue minNode;
+    JSONValue maxNode;
+    minNode.type = maxNode.type = JSON_TYPE.FLOAT;
+    minNode.floating = cast(real) min;
+    maxNode.floating = cast(real) max;
+
+    JSONValue inputNode;
+    inputNode.type = JSON_TYPE.OBJECT;
+    inputNode.object["min"] = minNode;
+    inputNode.object["max"] = maxNode;
+    writeConfig.object["info"] = inputNode;
+  }
 }
 
 // Tokenizes the feature and takes the highest N occurring words
@@ -170,6 +241,41 @@ class BagOfWordsTransform : FeatureTransform {
     assert(cardNode.type == JSON_TYPE.INTEGER);
     maxCardinality = cast(int)cardNode.integer;
     assert(inputs.length == 1);
+
+    if ("info" in config.object) {
+      foreach (token, indexNode; config.object["info"].object) {
+        assert(indexNode.type == JSON_TYPE.INTEGER);
+        tokenIndices[token] = cast(int)indexNode.integer;
+      }
+    }
+  }
+
+  override string getTypeName() { return "words"; }
+
+  override void save(ref JSONValue config) {
+    super.save(config);
+
+    JSONValue cardNode;
+    cardNode.type = JSON_TYPE.INTEGER;
+    cardNode.integer = maxCardinality;
+    config.object["max_card"] = cardNode;
+
+    JSONValue infoNode;
+    infoNode.type = JSON_TYPE.OBJECT;
+    if (tokenIndices.length > 0) {
+      foreach (token, index; tokenIndices) {
+        JSONValue tokenNode;
+        tokenNode.type = JSON_TYPE.INTEGER;
+        tokenNode.integer = index;
+        infoNode.object[token] = tokenNode;
+      }
+    }
+
+    config.object["info"] = infoNode;
+  }
+
+  override bool requiresPreprocess() {
+    return tokenIndices.length == 0;
   }
 
   override void process(ref FeatureVector ex) {
@@ -191,7 +297,7 @@ class BagOfWordsTransform : FeatureTransform {
 
   override void finalize() {
     auto tokens = tokenCounts.values;
-    topN!("a.count > b.count")(tokens, maxCardinality);
+    sort!("a.count > b.count")(tokens);
 
     string words;
     foreach (i, token; take(tokens, maxCardinality)) {
@@ -204,6 +310,8 @@ class BagOfWordsTransform : FeatureTransform {
 
       tokenIndices[token.name] = cast(int)i;
     }
+
+    tokenCounts.clear();
   }
 
   override bool transform(ref FeatureVector ex) {
@@ -240,6 +348,8 @@ class NgramTransform : FeatureTransform {
     super(config);
     assert(inputs.length > 1);
   }
+
+  override string getTypeName() { return "ngram"; }
 
   override void setInputs(int[] indices, int[] sizes) {
     super.setInputs(indices, sizes);
@@ -299,6 +409,8 @@ class IdentityTransform : FeatureTransform {
     assert(inputs.length == 1);
   }
 
+  override string getTypeName() { return "id"; }
+
   override void process(ref FeatureVector ex) { }
   override void finalize() { }
 
@@ -321,6 +433,9 @@ class LogTransform : FeatureTransform {
     super(config);
     assert(inputs.length == 1);
   }
+
+  override string getTypeName() { return "log"; }
+
   override void process(ref FeatureVector ex) { }
   override void finalize() { }
 
@@ -344,6 +459,9 @@ class ExpTransform : FeatureTransform {
     super(config);
     assert(inputs.length == 1);
   }
+
+  override string getTypeName() { return "exp"; }
+
   override void process(ref FeatureVector ex) { }
   override void finalize() { }
 
@@ -363,6 +481,8 @@ class InverseTransform : FeatureTransform {
     super(config);
     assert(inputs.length == 1);
   }
+
+  override string getTypeName() { return "inverse"; }
   override void process(ref FeatureVector ex) { }
   override void finalize() { }
 
@@ -389,6 +509,18 @@ class GreaterThanTransform : FeatureTransform {
     assert(node.type == JSON_TYPE.FLOAT);
     threshold = cast(double)node.floating;
   }
+
+  override void save(ref JSONValue config) {
+    super.save(config);
+    JSONValue thresholdNode;
+    thresholdNode.type = JSON_TYPE.FLOAT;
+    thresholdNode.floating = cast(real) threshold;
+
+    config.object["threshold"] = thresholdNode;
+  }
+
+  override string getTypeName() { return "greater_than"; }
+
   override void process(ref FeatureVector ex) { }
   override void finalize() { }
 

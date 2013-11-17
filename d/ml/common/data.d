@@ -1,4 +1,4 @@
-module transform.data;
+module common.data;
 
 import std.range, std.stdio, std.file;
 import std.conv, std.container;

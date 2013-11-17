@@ -7,7 +7,7 @@ import std.stdio;
 import std.container;
 import std.file;
 
-import transform.data;
+import common.data;
 
 class Parser {
   static DataSet parseCsvFile(string fileName) {

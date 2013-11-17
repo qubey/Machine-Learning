@@ -2,9 +2,9 @@ module tools.transformdata;
 
 import std.stdio;
 
-import transform.data;
+import common.data;
+import common.parser;
 import transform.transformer;
-import transform.parser;
 
 int main(string args[]) {
   if (args.length != 3) {
@@ -12,9 +12,17 @@ int main(string args[]) {
     return -1;
   }
 
+  auto transformer = new Transformer(args[2]);
+
   auto data = Parser.parseCsvFile(args[1]);
-  auto transformer = new Transformer(data.featureLabels, args[2]);
-  transformer.preprocess(data);
+  transformer.initializeTransforms(data.featureLabels);
+
+  if (transformer.shouldPreprocess()) {
+    writeln("Preprocessing data...");
+    transformer.preprocess(data);
+  } else {
+    writeln("Transforms already initialized");
+  }
 
   TransformedDataSet transdata;
   transformer.transformSet(data, transdata);

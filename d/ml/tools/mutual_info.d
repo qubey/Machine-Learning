@@ -7,11 +7,12 @@ import std.math;
 import std.conv;
 import std.algorithm;
 
-import transform.data;
 import transform.factory;
 import transform.transformer;
-import transform.parser;
+import common.parser;
+import common.data;
 import common.stats;
+
 
 int main(string args[]) {
   if (args.length != 3) {
