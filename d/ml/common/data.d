@@ -11,8 +11,20 @@ enum FeatureValueType {
 
 struct FeatureValue {
   FeatureValueType type;
-  string strval;
-  double numval;
+  union {
+    string strval;
+    double numval;
+  }
+
+  this(string str) {
+    type = FeatureValueType.STRING;
+    strval = str;
+  }
+
+  this(double num) {
+    type = FeatureValueType.DOUBLE;
+    numval = num;
+  }
 }
 
 alias FeatureVector = FeatureValue[];

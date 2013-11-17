@@ -137,11 +137,7 @@ class FeatureTransform {
     double value
   ) {
     assert(index < size());
-    ex[outputStartIndex + index] = FeatureValue(
-      FeatureValueType.DOUBLE,
-      null,
-      value
-    );
+    ex[outputStartIndex + index] = FeatureValue(value);
   }
 
   protected int[] inputFeatureIndices;

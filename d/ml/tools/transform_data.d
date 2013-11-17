@@ -18,10 +18,7 @@ int main(string args[]) {
   transformer.initializeTransforms(data.featureLabels);
 
   if (transformer.shouldPreprocess()) {
-    writeln("Preprocessing data...");
     transformer.preprocess(data);
-  } else {
-    writeln("Transforms already initialized");
   }
 
   TransformedDataSet transdata;

@@ -174,11 +174,7 @@ class Transformer {
     allFeatures.length = totalVectorSize;
 
     allFeatures[0..ex.features.length] = ex.features[];
-    allFeatures[ex.features.length..$] = FeatureValue(
-      FeatureValueType.DOUBLE,
-      null,
-      0.0
-    );
+    allFeatures[ex.features.length..$] = FeatureValue(0.0);
 
     int outIndex = 0; 
     foreach(t; transforms) {

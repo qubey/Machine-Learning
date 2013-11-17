@@ -25,7 +25,7 @@ class Parser {
       ex.target = to!int(record[0]);
       ex.features.length = record.length - 1;
       foreach (i, item; record[1..record.length]) {
-        ex.features[i] = FeatureValue( FeatureValueType.STRING, item, 0.0 );
+        ex.features[i] = FeatureValue(item);
       }
       exampleResults.insertBack(ex);
     }
