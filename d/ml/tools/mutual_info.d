@@ -16,7 +16,7 @@ import common.stats;
 
 int main(string args[]) {
   if (args.length != 3) {
-    writeln("Wrong number of arguments");
+    writeln(args[0] ~ " <data file> <transform config>");
     return -1;
   }
 

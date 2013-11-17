@@ -9,7 +9,8 @@ import transform.transformer;
 
 int main(string args[]) {
   if (args.length != 4) {
-    writeln("Wrong number of arguments: " ~ to!string(args.length));
+    writeln(args[0] ~
+      " <data file> <input transform config> <output transform config>");
     return -1;
   }
 
