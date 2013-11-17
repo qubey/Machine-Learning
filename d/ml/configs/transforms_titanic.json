@@ -7,23 +7,24 @@
       "output": false
     },
     {
-      "name": "fare_norm",
-      "type": "normalize",
-      "output": false,
+      "name": "fare_qb",
+      "type": "quantile_bucket",
+      "buckets": 10,
+      "output": true,
       "input": [ "fare" ]
     },
     {
       "name": "name_word",
       "type": "words",
       "max_card": 3,
-      "output": false,
+      "output": true,
       "input": [ "name" ]
     },
     {
-      "name": "name_fare_ngram",
+      "name": "name_age_ngram",
       "type": "ngram",
       "output": false,
-      "input": [ "fare_norm", "name_word" ]
+      "input": [ "age_qb", "name_word" ]
     },
     {
       "name": "age_norm_gt",
@@ -33,10 +34,10 @@
       "threshold": 0.2
     },
     {
-      "name": "age_norm_qb",
+      "name": "age_qb",
       "type": "quantile_bucket",
       "input": [ "age" ],
-      "buckets": 7,
+      "buckets": 15,
       "output": true
     }
   ]

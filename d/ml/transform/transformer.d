@@ -25,6 +25,10 @@ class Transformer {
     );
   }
 
+  auto getTransforms() {
+    return transforms;
+  }
+
   void initializeTransforms(
     string[] inputFeatures,
     ref DList!FeatureTransform transforms,
@@ -125,6 +129,7 @@ class Transformer {
       currentFeatureIndex += t.size();
 
       if (t.includeInOutput) {
+        t.setFinalOutputIndex(outputSize);
         outputSize += t.size();
       }
     }

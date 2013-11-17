@@ -21,6 +21,7 @@ class FeatureTransform {
   string[] inputs;
   bool includeInOutput;
   int outputStartIndex;
+  int finalOutputIndex;
 
   this(JSONValue config) {
     assert(config.type == JSON_TYPE.OBJECT);
@@ -47,6 +48,10 @@ class FeatureTransform {
     assert(sizes.length == indices.length);
     inputFeatureIndices = indices;
     inputSizes = sizes;
+  }
+
+  void setFinalOutputIndex(int fo) {
+    finalOutputIndex = fo;
   }
 
   void setOutputIndex(int o) {

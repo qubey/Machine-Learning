@@ -6,6 +6,7 @@ out_dir = $(bin)/tools
 all:
 	mkdir -p $(out_dir)
 	dmd transform_data.d $(libs) -of$(out_dir)/transform_data $(include_flags)
+	dmd mutual_info.d $(libs) -of$(out_dir)/mutual_info $(include_flags)
 
 clean:
 	rm -f $(out_dir)/*
