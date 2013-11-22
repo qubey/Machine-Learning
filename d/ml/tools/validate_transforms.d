@@ -16,7 +16,10 @@ int main(string args[]) {
   auto transformer = new Transformer(args[1]);
 
   foreach (t; transformer.getTransforms()) {
-    assert(!t.requiresPreprocess(), "Transform " ~ t.name ~ " not initialized");
+    assert(
+      !t.requiresPreprocess(),
+      "Transform " ~ t.name ~ " not initialized"
+    );
   }
 
   writeln("Transforms have all been properly initialized!");

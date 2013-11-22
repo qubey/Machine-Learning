@@ -4,7 +4,13 @@
       "name": "age_norm",
       "type": "normalize",
       "input": [ "age" ],
-      "output": false
+      "output": true
+    },
+    {
+      "name": "fare_norm",
+      "type": "normalize",
+      "input": [ "fare" ],
+      "output": true
     },
     {
       "name": "fare_qb",
@@ -23,7 +29,7 @@
     {
       "name": "name_age_ngram",
       "type": "ngram",
-      "output": true,
+      "output": false,
       "input": [ "age_qb", "name_word" ]
     },
     {

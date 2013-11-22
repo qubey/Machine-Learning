@@ -55,6 +55,9 @@ class TransformFactory {
         case "quantile_bucket":
           transform = new QuantileBucketTransform(node);
           break;
+        case "vec_to_id":
+          transform = new VecToIntTransform(node);
+          break;
         default:
           assert(false, "Unkown transform: " ~ transformType);
           continue;

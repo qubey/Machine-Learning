@@ -30,7 +30,9 @@ int main(string args[]) {
   // output the labels first
   auto labels = [ data.targetLabel ];
   foreach (t; transformer.getTransforms()) {
-    labels = array(chain(labels, t.getOutputNames()));
+    if (t.includeInOutput) {
+      labels = array(chain(labels, t.getOutputNames()));
+    }
   }
   writeln(joiner(labels, delim));
 

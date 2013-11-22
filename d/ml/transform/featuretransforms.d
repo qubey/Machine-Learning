@@ -560,3 +560,34 @@ class GreaterThanTransform : FeatureTransform {
   }
   override int size() { return 1; }
 }
+
+class VecToIntTransform : FeatureTransform {
+  this(JSONValue config) {
+    super(config);
+    assert(inputs.length == 1, "vec_to_id should have 1 input");
+  }
+
+  override string[] getOutputNames() { return [ name ]; }
+  override string getTypeName() { return "vec_to_id"; }
+  override void process(ref FeatureVector ex) { }
+  override void finalize() { }
+
+  override bool transform(ref FeatureVector ex) {
+    bool success = true;
+    foreach (i; 0 .. inputSizes[0]) {
+      double value;
+      success &= getInputDouble(ex, 0, i, value);
+      if (!success) break;
+      assert(value == 0.0 || value == 1.0,
+             "Input value should be {0, 1}: " ~ to!string(value));
+
+      if (value == 1) {
+        setOutputValue(ex, 0, cast(double)i+1);
+      }
+    }
+
+    return success;
+  }
+
+  override int size() { return 1; }
+}
