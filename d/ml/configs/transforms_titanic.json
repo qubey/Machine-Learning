@@ -33,6 +33,12 @@
       "input": [ "age_qb", "name_word" ]
     },
     {
+      "name": "name_age_cat",
+      "type": "vec_to_id",
+      "output": true,
+      "input": [ "name_age_ngram" ]
+    },
+    {
       "name": "age_norm_gt",
       "type": "greater_than",
       "input": [ "age_norm" ],

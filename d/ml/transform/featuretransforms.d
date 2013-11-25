@@ -383,7 +383,7 @@ class NgramTransform : FeatureTransform {
   override void finalize() { }
 
   override bool transform(ref FeatureVector ex) {
-    assert(ex.length == outputStartIndex + size());
+    assert(ex.length >= outputStartIndex + size());
 
     int[] curIndices;
     curIndices.length = inputs.length;
