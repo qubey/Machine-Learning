@@ -3,6 +3,9 @@ module tools.transformdata;
 import std.stdio;
 import std.json;
 import std.file;
+import std.algorithm;
+import std.range;
+import std.conv;
 
 import common.util;
 import common.data;
@@ -38,6 +41,26 @@ int main(string args[]) {
 
   auto model = ModelFactory.create(config);
   model.batchTrain(transdata);
+
+  double[] preds;
+  model.batchPredict(transdata, preds);
+  assert(preds.length > 0, "Got no predictions");
+  assert(preds.length == transdata.examples.length,
+         "Predictions length doesn't match example length");
+
+  auto labels = chain([ transdata.targetLabel ],
+                      transdata.featureLabels,
+                      [ "pred" ]);
+  writeln(joiner(labels, ","));
+
+  // Write the predictions and vector to stdout
+  foreach(i; 0 .. preds.length) {
+    auto example = transdata.examples[i];
+    auto line = chain([ to!string(example.target) ],
+                    map!(a => to!string(a))(example.features),
+                    [ to!string(preds[i]) ]);
+    writeln(joiner(line, ","));
+  }
 
   return 0;
 }

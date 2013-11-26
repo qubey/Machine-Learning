@@ -2,7 +2,7 @@
   "model": {
     "type": "kmeans",
     "k": 5,
-    "seed": 123,
+    "seed": 99,
     "iterations": 5
   },
   "transforms": [
@@ -41,7 +41,7 @@
     {
       "name": "name_age_cat",
       "type": "vec_to_id",
-      "output": true,
+      "output": false,
       "input": [ "name_age_ngram" ]
     },
     {

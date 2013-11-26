@@ -47,5 +47,6 @@ struct TransformedExample {
 
 struct TransformedDataSet {
   TransformedExample[] examples;
+  string targetLabel;
   string[] featureLabels;
 }

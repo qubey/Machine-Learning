@@ -208,6 +208,15 @@ class Transformer {
     foreach (i, example; data.examples) {
       transform(example, output.examples[i]);
     }
+
+    string[] featureLabels;
+    foreach (t; transforms) {
+      if (t.includeInOutput) {
+        featureLabels = array(chain(featureLabels, t.getOutputNames()));
+      }
+    }
+    output.featureLabels = featureLabels;
+    output.targetLabel = data.targetLabel;
   }
 
   void saveTransforms(string filename) {

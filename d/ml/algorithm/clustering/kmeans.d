@@ -1,4 +1,4 @@
-module algorithm.kmeans;
+module algorithm.clustering.kmeans;
 
 import std.algorithm;
 import std.stdio;
@@ -70,6 +70,27 @@ class KMeansModel : Model {
     }
   }
 
+  override void batchPredict(ref TransformedDataSet data, out double[] preds) {
+    assert(data.examples.length > 0, "Data for predictions must be > 0");
+    preds.length = data.examples.length;
+
+    foreach (i, ex; data.examples) {
+      double closestCentroid = 0;
+      double minDistance = computeDistance(centroids[0], ex.features);
+
+      // Find the closest centroid
+      foreach (idx; 1 .. centroids.length) {
+        double dist = computeDistance(centroids[idx], ex.features);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestCentroid = idx;
+        }
+      }
+
+      preds[i] = closestCentroid;
+    }
+  }
+
   /*
    * Given the partitioned data, computes new centroids
    */
@@ -91,7 +112,10 @@ class KMeansModel : Model {
       }
 
       foreach(j; 0 .. centroids[i].length) {
-        centroids[i][j] = sum[j] / count;
+        auto center = sum[j] / count;
+        if (!isNaN(center)) {
+          centroids[i][j] = center;
+        }
       }
     }
   }
@@ -155,7 +179,6 @@ class KMeansModel : Model {
         if (fval < featureMins[i]) featureMins[i] = fval;
       }
     }
-
 
     foreach(i; 0 .. k) {
       centroids[i].length = firstExample.features.length;

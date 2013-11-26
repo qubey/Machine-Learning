@@ -3,7 +3,7 @@ module algorithm.modelfactory;
 import std.json;
 
 public import algorithm.model;
-import algorithm.kmeans;
+import algorithm.clustering.kmeans;
 
 class ModelFactory {
   static Model create(JSONValue config) {

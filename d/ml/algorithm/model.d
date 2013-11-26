@@ -12,4 +12,6 @@ class Model {
   }
 
   abstract void batchTrain(ref TransformedDataSet data);
+
+  abstract void batchPredict(ref TransformedDataSet data, out double[] preds);
 }
