@@ -1,5 +1,6 @@
 bin = ${D_MAKE_ROOT}/bin
-libs = $(bin)/common/libcommon.o $(bin)/transform/libtransform.o
+libs = $(bin)/common/libcommon.o $(bin)/transform/libtransform.o \
+  $(bin)/algorithm/libmodels.o
 include_flags = -I${D_MAKE_ROOT}
 out_dir = $(bin)/tools
 
@@ -10,6 +11,8 @@ all:
 	dmd process_transforms.d $(libs) -of$(out_dir)/process_transforms \
     $(include_flags)
 	dmd validate_transforms.d $(libs) -of$(out_dir)/validate_transforms \
+    $(include_flags)
+	dmd trainer.d $(libs) -of$(out_dir)/trainer \
     $(include_flags)
 
 clean:

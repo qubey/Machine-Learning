@@ -1,4 +1,10 @@
 {
+  "model": {
+    "type": "kmeans",
+    "k": 5,
+    "seed": 123,
+    "iterations": 5
+  },
   "transforms": [
     {
       "name": "age_norm",

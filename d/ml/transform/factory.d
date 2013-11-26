@@ -5,6 +5,7 @@ import std.container;
 import std.file;
 import std.stdio;
 
+import common.util;
 import transform.bucketer;
 public import transform.featuretransforms;
 
@@ -13,14 +14,14 @@ class TransformFactory {
     string jsonConfigFile,
     out DList!FeatureTransform transforms
   ) {
-    string jsonText = readText(jsonConfigFile);
-    JSONValue jsonRoot;
-    try {
-      jsonRoot = parseJSON(jsonText);
-    } catch (Exception e) {
-      assert(false, "Error reading JSON: " ~ e.msg);
-    }
+    JSONValue jsonRoot = parseJson(jsonConfigFile);
+    createTransforms(jsonRoot, transforms);
+  }
 
+  static void createTransforms(
+    JSONValue jsonRoot,
+    out DList!FeatureTransform transforms
+  ) {
     JSONValue transformArray = jsonRoot.object["transforms"];
 
     assert(transformArray.type == JSON_TYPE.ARRAY);

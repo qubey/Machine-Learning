@@ -6,6 +6,10 @@ import std.string;
 import std.range;
 import std.json;
 import std.random;
+import std.container;
+import std.math;
+import std.conv;
+import std.array;
 
 import common.data;
 import algorithm.model;
@@ -16,6 +20,7 @@ class KMeansModel : Model {
     int k; // number of clusters
     double[][] centroids;
     int seed;
+    int iterations;
   }
 
   this(JSONValue config) {
@@ -36,19 +41,101 @@ class KMeansModel : Model {
     // Initialize the number of clusters
     k = cast(int)knode.integer;
     centroids.length = k;
+
+    assert ("iterations" in config.object, "Missing iterations count");
+    auto iterationNode = config.object["iterations"];
+    assert(iterationNode.type == JSON_TYPE.INTEGER);
+    iterations = cast(int) iterationNode.integer;
   }
 
-  override void batchTrain(const ref TransformedDataSet data) {
+  override void batchTrain(ref TransformedDataSet data) {
     assert(data.examples.length > 0, "Data given has 0 examples");
     assert(data.examples[0].features.length > 0, "Data given has 0 features");
 
     initializeCentroids(data);
+
+    // initialize the classified data
+    DList!TransformedExample  partitionedData[];
+    partitionedData.length = k;
+
+    // start the iterations until convergence
+    foreach (i; 0 .. iterations) {
+      // Start from a clean slate
+      foreach(list; partitionedData) {
+        list.clear();
+      }
+
+      partitionData(data, partitionedData);
+      computeCentroids(partitionedData);
+    }
+  }
+
+  /*
+   * Given the partitioned data, computes new centroids
+   */
+  private void computeCentroids(ref DList!TransformedExample data[]) {
+    foreach(i, list; data) {
+      if (walkLength(list[]) == 0) {
+        continue;
+      }
+
+      double[] sum;
+      int count = 0;
+      sum.length = list.front().features.length;
+
+      foreach (item; list) {
+        foreach (j, val; item.features) {
+          sum[j] += val;
+        }
+        count++;
+      }
+
+      foreach(j; 0 .. centroids[i].length) {
+        centroids[i][j] = sum[j] / count;
+      }
+    }
+  }
+
+  /*
+   * Use the current centroids to partition the data into the k classes
+   */
+  private void partitionData(
+    ref TransformedDataSet data,
+    ref DList!TransformedExample partitionedData[]
+  ) {
+    foreach (ex; data.examples) {
+      double minDistance = computeDistance(centroids[0], ex.features);
+      int closestCentroid = 0;
+
+      foreach(centroid; 1 .. k) {
+        double distance = computeDistance(centroids[centroid], ex.features);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestCentroid = centroid;
+        }
+      }
+
+      partitionedData[closestCentroid].insert(ex);
+    }
+  }
+
+  // Computes the L2 norm of the difference of two vectors
+  double computeDistance(const double[] from, const double[] to) {
+    assert(from.length == to.length, "Data points are not of the same length");
+
+    double squaredSum = 0;
+    foreach(i; 0 .. from.length) {
+      double diff = from[i] - to[i];
+      squaredSum += (diff * diff);
+    }
+
+    return sqrt(squaredSum);
   }
 
   // Initialize the starting random centroids for the k means algorithm
   // This does one pass over the full data to find the range in which the
   // randomized values should fall.
-  private void initializeCentroids(const ref TransformedDataSet data) {
+  private void initializeCentroids(ref TransformedDataSet data) {
     auto firstExample = data.examples[0];
 
     double[] featureMins, featureMaxes;

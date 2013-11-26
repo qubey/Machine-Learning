@@ -1,19 +1,21 @@
 module tools.transformdata;
 
 import std.stdio;
-import std.range;
-import std.algorithm;
+import std.json;
+import std.file;
 
+import common.util;
 import common.data;
 import common.parser;
 import transform.transformer;
+import algorithm.modelfactory;
 
 void getTransformedData(
   string dataFile,
-  string configFile,
+  JSONValue config,
   out TransformedDataSet data
 ) {
-  auto transformer = new Transformer(configFile);
+  auto transformer = new Transformer(config);
 
   auto rawData = Parser.parseCsvFile(dataFile);
   transformer.initializeTransforms(rawData.featureLabels);
@@ -30,27 +32,12 @@ int main(string args[]) {
     writeln(args[0] ~ " <data file> <transform config>");
     return -1;
   }
+  auto config = parseJson(args[2]);
   TransformedDataSet transdata;
-  getTransformedData(args[1], args[2], transdata);
+  getTransformedData(args[1], config, transdata);
 
-  const string delim = ",";
-  // output the labels first
-  auto labels = [ data.targetLabel ];
-  foreach (t; transformer.getTransforms()) {
-    if (t.includeInOutput) {
-      labels = array(chain(labels, t.getOutputNames()));
-    }
-  }
-  writeln(joiner(labels, delim));
-
-  // output the transformed data
-  foreach(example; transdata.examples) {
-    write(example.target);
-    foreach (value; example.features) {
-      write(delim, value);
-    }
-    writeln();
-  }
+  auto model = ModelFactory.create(config);
+  model.batchTrain(transdata);
 
   return 0;
 }

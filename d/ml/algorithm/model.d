@@ -11,7 +11,5 @@ class Model {
            "JSON node for configuration should be an object");
   }
 
-  abstract void batchTrain(const ref TransformedDataSet data);
-
-  
+  abstract void batchTrain(ref TransformedDataSet data);
 }

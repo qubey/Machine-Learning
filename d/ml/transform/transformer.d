@@ -14,12 +14,21 @@ class Transformer {
   private int finalOutputSize;
   private int totalVectorSize;
 
+  this(JSONValue config) {
+    TransformFactory.createTransforms(config, transforms);
+  }
+
   this(string configFile) {
     TransformFactory.createTransforms(configFile, transforms);
   }
 
   this(string[] inputFeatures, string configFile) {
     this(configFile);
+    initializeTransforms(inputFeatures);
+  }
+
+  this(string[] inputFeatures, JSONValue config) {
+    this(config);
     initializeTransforms(inputFeatures);
   }
 
