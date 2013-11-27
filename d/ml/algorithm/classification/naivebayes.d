@@ -2,6 +2,8 @@ module algorithm.classification.naivebayes;
 
 import std.json;
 import std.conv;
+import std.stdio;
+import std.range;
 
 import algorithm.model;
 import common.data;
@@ -40,6 +42,7 @@ class NaiveBayesModel : Model {
       double maxProb = 0;
       double maxK = 0;
       double sum = 0;
+
       foreach (k; 0 .. featureProbs.length) {
         double classProb = classPrior.get(k);
         auto featureClassProbs = featureProbs[k];
@@ -79,7 +82,8 @@ class NaiveBayesModel : Model {
       // For each class, feature pair, count the class-conditional probability
       foreach(k; 0 .. featureProbs.length) {
         foreach (i; 0 .. ex.features.length) {
-          featureProbs[k][i].count(ex.target == cast(int)k);
+          auto val = ex.features[i];
+          featureProbs[k][i].count(ex.target == cast(int)k && val == 1.0);
         }
       }
     }
