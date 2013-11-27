@@ -1,5 +1,57 @@
 module common.stats;
 
+struct Multinoulli {
+  ulong[] numerators;
+  ulong denominator;
+
+  this(int k) {
+    numerators.length = k;
+    numerators[] = 0;
+    denominator = 0;
+  }
+
+  void count(double k) {
+    if (k < numerators.length && k >= 0) {
+      numerators[cast(int)k]++;
+    }
+
+    denominator++;
+  }
+
+  ulong classes() {
+    return numerators.length;
+  }
+
+  real get(ulong k) {
+    if (denominator == 0) return 0.0;
+    assert(k < numerators.length && k >= 0);
+    return (cast(real)numerators[k]) / denominator;
+  }
+}
+
+struct Bernoulli {
+  ulong num = 0;
+  ulong denom = 0;
+
+  void count(double k) {
+    count(k == 1.0);
+  }
+
+  void count(bool positive) {
+    if (positive) num++;
+    denom++;
+  }
+
+  real get() {
+    if (denom == 0) return 0.0;
+    return (cast(real)num) / denom;
+  }
+
+  real inverse() {
+    return 1 - get();
+  }
+}
+
 struct Fraction {
   ulong numerator;
   ulong denominator;
@@ -32,6 +84,10 @@ struct Fraction {
 
 struct DiscreteProbability {
   Fraction prob;
+
+  void count(double x) {
+    count(x == 1.0);
+  }
 
   void count(bool x) {
     if (x) {

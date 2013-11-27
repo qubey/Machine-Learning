@@ -24,4 +24,6 @@
 #
 # TRAIN MODELS
 #
-./bin/tools/trainer ${DATA_DIR}/titanic/train.csv ${D_MAKE_ROOT}/configs/transforms_titanic.json
+#./bin/tools/trainer ${DATA_DIR}/titanic/train.csv ${D_MAKE_ROOT}/configs/transforms_titanic.json
+
+./bin/tools/trainer ${DATA_DIR}/insults/train.csv ${D_MAKE_ROOT}/configs/transforms_insults.json

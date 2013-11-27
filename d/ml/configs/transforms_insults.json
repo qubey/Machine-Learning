@@ -1,9 +1,19 @@
 {
+  "output": {
+    "features": false,
+    "target": true,
+    "delimiter": "\t"
+  },
+  "model": {
+    "type": "naive_bayes",
+    "k": 2
+  },
   "transforms": [
     {
       "name": "comment_words",
       "type": "words",
       "max_card": 200,
+      "output": true,
       "input": [ "Comment" ]
     }
   ]

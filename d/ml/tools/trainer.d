@@ -13,6 +13,37 @@ import common.parser;
 import transform.transformer;
 import algorithm.modelfactory;
 
+struct OutputConfig {
+  bool writeFeatures = true;
+  bool writeTarget = true;
+  string delimiter = ",";
+}
+
+void setBool(JSONValue config, string key, ref bool result) {
+  assert(config.type == JSON_TYPE.OBJECT);
+  if (key !in config.object) return;
+
+  auto node = config.object[key];
+  result = node.type == JSON_TYPE.TRUE;
+}
+
+OutputConfig getOutputConfig(JSONValue config) {
+  OutputConfig result;
+  if ("output" !in config.object) return result;
+
+  auto outputConfig = config.object["output"];
+  setBool(outputConfig, "features", result.writeFeatures);
+  setBool(outputConfig, "target", result.writeTarget);
+
+  if ("delimiter" !in outputConfig.object) {
+    return result;
+  }
+  auto delimNode = outputConfig.object["delimiter"];
+  assert(delimNode.type == JSON_TYPE.STRING);
+  result.delimiter = delimNode.str;
+  return result;
+}
+
 void getTransformedData(
   string dataFile,
   JSONValue config,
@@ -48,18 +79,28 @@ int main(string args[]) {
   assert(preds.length == transdata.examples.length,
          "Predictions length doesn't match example length");
 
-  auto labels = chain([ transdata.targetLabel ],
-                      transdata.featureLabels,
-                      [ "pred" ]);
-  writeln(joiner(labels, ","));
+
+  auto outconfig = getOutputConfig(config);
+  string[] labels = [ "pred" ];
+  if (outconfig.writeTarget) {
+    labels = [ transdata.targetLabel ] ~ labels;
+  }
+  if (outconfig.writeFeatures) {
+    labels = labels ~ transdata.featureLabels;
+  }
+  writeln(joiner(labels, outconfig.delimiter));
 
   // Write the predictions and vector to stdout
   foreach(i; 0 .. preds.length) {
     auto example = transdata.examples[i];
-    auto line = chain([ to!string(example.target) ],
-                    map!(a => to!string(a))(example.features),
-                    [ to!string(preds[i]) ]);
-    writeln(joiner(line, ","));
+    auto line = [ to!string(preds[i]) ];
+    if (outconfig.writeTarget) {
+      line = [ to!string(example.target) ] ~ line;
+    }
+    if (outconfig.writeFeatures) {
+      line = line ~ array(map!(a => to!string(a))(example.features));
+    }
+    writeln(joiner(line, outconfig.delimiter));
   }
 
   return 0;

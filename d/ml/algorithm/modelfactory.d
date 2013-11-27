@@ -5,6 +5,7 @@ import std.json;
 public import algorithm.model;
 import algorithm.clustering.kmeans;
 import algorithm.clustering.kmedoids;
+import algorithm.classification.naivebayes;
 
 class ModelFactory {
   static Model create(JSONValue config) {
@@ -28,6 +29,9 @@ class ModelFactory {
         break;
       case "kmedoids":
         ret = new KMedoidsModel(modelConfig);
+        break;
+      case "naive_bayes":
+        ret = new NaiveBayesModel(modelConfig);
         break;
       default:
         assert(false, "Invalid model type: " ~ type);

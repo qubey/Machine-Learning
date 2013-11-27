@@ -1,9 +1,9 @@
 {
   "model": {
     "type": "kmedoids",
-    "k": 5,
+    "k": 2,
     "seed": 123,
-    "iterations": 1
+    "iterations": 4
   },
   "transforms": [
     {
