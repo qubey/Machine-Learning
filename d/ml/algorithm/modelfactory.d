@@ -4,6 +4,7 @@ import std.json;
 
 public import algorithm.model;
 import algorithm.clustering.kmeans;
+import algorithm.clustering.kmedoids;
 
 class ModelFactory {
   static Model create(JSONValue config) {
@@ -24,6 +25,9 @@ class ModelFactory {
     switch(type) {
       case "kmeans":
         ret = new KMeansModel(modelConfig);
+        break;
+      case "kmedoids":
+        ret = new KMedoidsModel(modelConfig);
         break;
       default:
         assert(false, "Invalid model type: " ~ type);
