@@ -12,6 +12,7 @@ import common.stats;
 // TODO:
 // 1. Implement Bayesian Naive Bayes (priors)
 // 2. Implement different distributions for the priors and conditionals
+// 2. a. Make the featureProbs a Multinoulli instead of bernoulli
 
 class NaiveBayesModel : Model {
   private {
