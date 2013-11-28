@@ -1,4 +1,5 @@
 Transforms:
+0. Add option to ignore input column and option to include a column in output
 1. Naive Bayes
 2. LDA
 3. Linear regression (MLE, ridge, bayesian)

@@ -6,13 +6,16 @@
   },
   "model": {
     "type": "naive_bayes",
-    "k": 2
+    "k": 2,
+    "feature_prior": 1.0,
+    "feature_prior_weight": 1,
+    "class_prior_weight": 1
   },
   "transforms": [
     {
       "name": "comment_words",
       "type": "words",
-      "max_card": 200,
+      "max_card": 1000,
       "output": true,
       "input": [ "Comment" ]
     }

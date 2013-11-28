@@ -1,3 +1,8 @@
+TEST_DATA="${DATA_DIR}/titanic/test.csv"
+TRAIN_DATA="${DATA_DIR}/titanic/train.csv"
+BIN="./bin/tools/trainer"
+CONFIG="${D_MAKE_ROOT}/configs/transforms_titanic.json"
+
 #
 # TRANSFORM DATA
 #
@@ -26,4 +31,6 @@
 #
 #./bin/tools/trainer ${DATA_DIR}/titanic/train.csv ${D_MAKE_ROOT}/configs/transforms_titanic.json
 
-./bin/tools/trainer ${DATA_DIR}/insults/train.csv ${D_MAKE_ROOT}/configs/transforms_insults.json
+#./bin/tools/trainer ${DATA_DIR}/insults/train.csv ${D_MAKE_ROOT}/configs/transforms_insults.json
+
+${BIN} ${TRAIN_DATA} ${CONFIG} ${TEST_DATA}

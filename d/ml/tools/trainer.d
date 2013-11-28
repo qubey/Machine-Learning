@@ -47,11 +47,12 @@ OutputConfig getOutputConfig(JSONValue config) {
 void getTransformedData(
   string dataFile,
   JSONValue config,
+  bool hasTarget,
   out TransformedDataSet data
 ) {
   auto transformer = new Transformer(config);
 
-  auto rawData = Parser.parseCsvFile(dataFile);
+  auto rawData = Parser.parseCsvFile(dataFile, hasTarget);
   transformer.initializeTransforms(rawData.featureLabels);
 
   if (transformer.shouldPreprocess()) {
@@ -62,37 +63,43 @@ void getTransformedData(
 }
 
 int main(string args[]) {
-  if (args.length != 3) {
+  if (args.length != 3 && args.length != 4) {
     writeln(args[0] ~ " <data file> <transform config>");
     return -1;
   }
   auto config = parseJson(args[2]);
-  TransformedDataSet transdata;
-  getTransformedData(args[1], config, transdata);
+  TransformedDataSet trainingData;
+  getTransformedData(args[1], config, true, trainingData);
+
+  TransformedDataSet testData;
+  if (args.length == 4) {
+    getTransformedData(args[3], config, false, testData);
+  }
 
   auto model = ModelFactory.create(config);
-  model.batchTrain(transdata);
+  model.batchTrain(trainingData);
 
   double[] preds;
-  model.batchPredict(transdata, preds);
+  auto predictionData = testData.examples.length > 0 ? testData : trainingData;
+  model.batchPredict(predictionData, preds);
   assert(preds.length > 0, "Got no predictions");
-  assert(preds.length == transdata.examples.length,
+  assert(preds.length == predictionData.examples.length,
          "Predictions length doesn't match example length");
 
 
   auto outconfig = getOutputConfig(config);
   string[] labels = [ "pred" ];
   if (outconfig.writeTarget) {
-    labels = [ transdata.targetLabel ] ~ labels;
+    labels = [ trainingData.targetLabel ] ~ labels;
   }
   if (outconfig.writeFeatures) {
-    labels = labels ~ transdata.featureLabels;
+    labels = labels ~ predictionData.featureLabels;
   }
   writeln(joiner(labels, outconfig.delimiter));
 
   // Write the predictions and vector to stdout
   foreach(i; 0 .. preds.length) {
-    auto example = transdata.examples[i];
+    auto example = predictionData.examples[i];
     auto line = [ to!string(preds[i]) ];
     if (outconfig.writeTarget) {
       line = [ to!string(example.target) ] ~ line;

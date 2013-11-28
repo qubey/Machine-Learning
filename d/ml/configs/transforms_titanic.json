@@ -1,41 +1,47 @@
 {
+  "output": {
+    "features": false,
+    "target": false,
+    "delimiter": ","
+  },
   "model": {
-    "type": "kmedoids",
+    "type": "naive_bayes",
     "k": 2,
-    "seed": 123,
-    "iterations": 4
+    "feature_prior": 1.0,
+    "feature_prior_weight": 1,
+    "class_prior_weight": 1
   },
   "transforms": [
     {
       "name": "age_norm",
       "type": "normalize",
       "input": [ "age" ],
-      "output": true
+      "output": false
     },
     {
       "name": "fare_norm",
       "type": "normalize",
       "input": [ "fare" ],
-      "output": true
+      "output": false
     },
     {
       "name": "fare_qb",
       "type": "quantile_bucket",
       "buckets": 10,
-      "output": false,
+      "output": true,
       "input": [ "fare" ]
     },
     {
       "name": "name_word",
       "type": "words",
       "max_card": 3,
-      "output": false,
+      "output": true,
       "input": [ "name" ]
     },
     {
       "name": "name_age_ngram",
       "type": "ngram",
-      "output": false,
+      "output": true,
       "input": [ "age_qb", "name_word" ]
     },
     {
@@ -55,8 +61,8 @@
       "name": "age_qb",
       "type": "quantile_bucket",
       "input": [ "age" ],
-      "buckets": 15,
-      "output": false
+      "buckets": 10,
+      "output": true
     }
   ]
 }

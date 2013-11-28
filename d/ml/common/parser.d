@@ -10,21 +10,27 @@ import std.file;
 import common.data;
 
 class Parser {
-  static DataSet parseCsvFile(string fileName) {
+  static DataSet parseCsvFile(string fileName, bool hasTarget = true) {
     DataSet data;
     string dataText = readText(fileName);
     auto records = csvReader(dataText, null);
     auto exampleResults = DList!RawExample();
 
-    data.targetLabel = records.header[0];
-    data.featureLabels = records.header[1..records.header.length];
+    int start = 0;
+    if (hasTarget) {
+      data.targetLabel = records.header[0];
+      start = 1;
+    }
+    data.featureLabels = records.header[start .. records.header.length];
 
     foreach (recordObj; records) {
       auto record = array(recordObj);
       RawExample ex;
-      ex.target = to!int(record[0]);
-      ex.features.length = record.length - 1;
-      foreach (i, item; record[1..record.length]) {
+      if (hasTarget) {
+        ex.target = to!int(record[0]);
+      }
+      ex.features.length = record.length - start;
+      foreach (i, item; record[start .. record.length]) {
         ex.features[i] = FeatureValue(item);
       }
       exampleResults.insertBack(ex);

@@ -8,6 +8,7 @@ import std.range;
 import algorithm.model;
 import common.data;
 import common.stats;
+import common.json;
 
 // TODO:
 // 1. Implement Bayesian Naive Bayes (priors)
@@ -17,18 +18,24 @@ import common.stats;
 class NaiveBayesModel : Model {
   private {
     Bernoulli[][] featureProbs;
-    Multinoulli classPrior;
+    Multinoulli classProb;
+    real featurePrior = 0;
+    long featurePriorWeight = 0;
+    long classPriorWeight = 0;
   }
   
   this(JSONValue config) {
     super(config);
 
-    assert("k" in config.object, "Need to specify number of classes");
-    auto kNode = config.object["k"];
-    assert(kNode.type == JSON_TYPE.INTEGER, "K should be an int");
+    long k;
+    assert(JSONUtil.getInt(config, "k", k),
+           "Need to specify number of classes");
 
-    auto k = cast(int) kNode.integer;
-    classPrior = Multinoulli(k);
+    JSONUtil.getFloat(config, "feature_prior", featurePrior);
+    JSONUtil.getInt(config, "feature_prior_weight", featurePriorWeight);
+    JSONUtil.getInt(config, "class_prior_weight", classPriorWeight);
+
+    classProb = Multinoulli(k, classPriorWeight);
     featureProbs.length = k;
   }
 
@@ -45,7 +52,7 @@ class NaiveBayesModel : Model {
       double sum = 0;
 
       foreach (k; 0 .. featureProbs.length) {
-        double classProb = classPrior.get(k);
+        double classProb = classProb.get(k);
         auto featureClassProbs = featureProbs[k];
 
         foreach (f; 0 .. ex.features.length) {
@@ -70,15 +77,16 @@ class NaiveBayesModel : Model {
   override void batchTrain(ref TransformedDataSet data) {
     foreach(i; 0 .. featureProbs.length) {
       featureProbs[i].length = data.examples[0].features.length;
+      featureProbs[i][] = Bernoulli(featurePrior, featurePriorWeight);
     }
 
     foreach (ex; data.examples) {
-      assert(ex.target < classPrior.classes(),
+      assert(ex.target < classProb.classes(),
              "Target larger than k: " ~ to!string(ex.target));
       assert(ex.target >= 0, "Target < 0: " ~ to!string(ex.target));
 
       // Count the empirical class prior probability
-      classPrior.count(ex.target);
+      classProb.count(ex.target);
 
       // For each class, feature pair, count the class-conditional probability
       foreach(k; 0 .. featureProbs.length) {

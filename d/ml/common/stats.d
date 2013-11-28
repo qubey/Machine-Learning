@@ -5,9 +5,14 @@ struct Multinoulli {
   ulong denominator;
 
   this(int k) {
+    this(k, 0);
+  }
+
+  // This assumes that every class is equally probable
+  this(long k, long priorWeight) {
     numerators.length = k;
-    numerators[] = 0;
-    denominator = 0;
+    numerators[] = priorWeight / k;
+    denominator = priorWeight;
   }
 
   void count(double k) {
@@ -32,6 +37,11 @@ struct Multinoulli {
 struct Bernoulli {
   ulong num = 0;
   ulong denom = 0;
+
+  this(real priorProbability, long priorWeight) {
+    num = cast(ulong) priorProbability * priorWeight;
+    denom = priorWeight;
+  }
 
   void count(double k) {
     count(k == 1.0);
