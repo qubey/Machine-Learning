@@ -10,6 +10,7 @@ import std.conv;
 import common.util;
 import common.data;
 import common.parser;
+import common.json;
 import transform.transformer;
 import algorithm.modelfactory;
 
@@ -17,30 +18,41 @@ struct OutputConfig {
   bool writeFeatures = true;
   bool writeTarget = true;
   string delimiter = ",";
+  string[] copyColumns;
 }
 
-void setBool(JSONValue config, string key, ref bool result) {
-  assert(config.type == JSON_TYPE.OBJECT);
-  if (key !in config.object) return;
-
-  auto node = config.object[key];
-  result = node.type == JSON_TYPE.TRUE;
+struct InputConfig {
+  string targetName = "target";
+  string trainingFile;
+  string testFile;
 }
 
 OutputConfig getOutputConfig(JSONValue config) {
   OutputConfig result;
-  if ("output" !in config.object) return result;
-
-  auto outputConfig = config.object["output"];
-  setBool(outputConfig, "features", result.writeFeatures);
-  setBool(outputConfig, "target", result.writeTarget);
-
-  if ("delimiter" !in outputConfig.object) {
+  JSONValue outputConfig;
+  if (!JSONUtil.getObject(config, "output", outputConfig)) {
+    // didn't find the object
     return result;
   }
-  auto delimNode = outputConfig.object["delimiter"];
-  assert(delimNode.type == JSON_TYPE.STRING);
-  result.delimiter = delimNode.str;
+  JSONUtil.getBool(outputConfig, "features", result.writeFeatures);
+  JSONUtil.getBool(outputConfig, "target", result.writeTarget);
+  JSONUtil.getString(outputConfig, "delimiter", result.delimiter);
+  JSONUtil.getArray!string(outputConfig, "raw_copy_cols", result.copyColumns);
+
+  return result;
+}
+
+InputConfig getInputConfig(JSONValue config) {
+  InputConfig result;
+  JSONValue inputConfig;
+  bool success = JSONUtil.getObject(config, "input", inputConfig);
+  assert(success, "Could not find 'input' node in config");
+  success =
+    JSONUtil.getString(inputConfig, "training_data", result.trainingFile);
+  assert(success, "Could not find training data file name");
+  JSONUtil.getString(inputConfig, "test_data", result.testFile);
+
+  JSONUtil.getString(inputConfig, "target_name", result.targetName);
   return result;
 }
 
@@ -48,11 +60,14 @@ void getTransformedData(
   string dataFile,
   JSONValue config,
   bool hasTarget,
-  out TransformedDataSet data
+  out TransformedDataSet data,
+  out DataSet rawData
 ) {
   auto transformer = new Transformer(config);
+  auto inConfig = getInputConfig(config);
 
-  auto rawData = Parser.parseCsvFile(dataFile, hasTarget);
+  rawData =
+    Parser.parseCsvFile(dataFile, hasTarget ? inConfig.targetName : "");
   transformer.initializeTransforms(rawData.featureLabels);
 
   if (transformer.shouldPreprocess()) {
@@ -68,12 +83,13 @@ int main(string args[]) {
     return -1;
   }
   auto config = parseJson(args[2]);
+  DataSet rawData;
   TransformedDataSet trainingData;
-  getTransformedData(args[1], config, true, trainingData);
+  getTransformedData(args[1], config, true, trainingData, rawData);
 
   TransformedDataSet testData;
   if (args.length == 4) {
-    getTransformedData(args[3], config, false, testData);
+    getTransformedData(args[3], config, false, testData, rawData);
   }
 
   auto model = ModelFactory.create(config);
@@ -95,7 +111,14 @@ int main(string args[]) {
   if (outconfig.writeFeatures) {
     labels = labels ~ predictionData.featureLabels;
   }
+  if (outconfig.copyColumns.length > 0) {
+    labels = labels ~ outconfig.copyColumns;
+  }
   writeln(joiner(labels, outconfig.delimiter));
+
+  int[] colIndices =array(
+    map!(a => findIndex(rawData.featureLabels, a))(outconfig.copyColumns)
+  );
 
   // Write the predictions and vector to stdout
   foreach(i; 0 .. preds.length) {
@@ -106,6 +129,13 @@ int main(string args[]) {
     }
     if (outconfig.writeFeatures) {
       line = line ~ array(map!(a => to!string(a))(example.features));
+    }
+    if (outconfig.copyColumns.length > 0) {
+      line = line ~ array(
+        map!(
+          a => to!string(rawData.examples[i].features[a].strval)
+        )(colIndices)
+      );
     }
     writeln(joiner(line, outconfig.delimiter));
   }

@@ -2,7 +2,11 @@
   "output": {
     "features": false,
     "target": false,
-    "delimiter": ","
+    "delimiter": ",",
+    "raw_copy_cols": [ "PassengerId" ]
+  },
+  "input": {
+    "target_name": "Survived"
   },
   "model": {
     "type": "naive_bayes",
@@ -15,13 +19,13 @@
     {
       "name": "age_norm",
       "type": "normalize",
-      "input": [ "age" ],
+      "input": [ "Age" ],
       "output": false
     },
     {
       "name": "fare_norm",
       "type": "normalize",
-      "input": [ "fare" ],
+      "input": [ "Fare" ],
       "output": false
     },
     {
@@ -29,14 +33,14 @@
       "type": "quantile_bucket",
       "buckets": 10,
       "output": true,
-      "input": [ "fare" ]
+      "input": [ "Fare" ]
     },
     {
       "name": "name_word",
       "type": "words",
       "max_card": 3,
       "output": true,
-      "input": [ "name" ]
+      "input": [ "Name" ]
     },
     {
       "name": "name_age_ngram",
@@ -60,7 +64,7 @@
     {
       "name": "age_qb",
       "type": "quantile_bucket",
-      "input": [ "age" ],
+      "input": [ "Age" ],
       "buckets": 10,
       "output": true
     }

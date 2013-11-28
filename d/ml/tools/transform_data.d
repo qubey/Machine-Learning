@@ -9,14 +9,14 @@ import common.parser;
 import transform.transformer;
 
 int main(string args[]) {
-  if (args.length != 3) {
-    writeln(args[0] ~ " <data file> <transform config>");
+  if (args.length != 4) {
+    writeln(args[0] ~ " <data file> <transform config> <target name>");
     return -1;
   }
 
   auto transformer = new Transformer(args[2]);
 
-  auto data = Parser.parseCsvFile(args[1]);
+  auto data = Parser.parseCsvFile(args[1], args[3]);
   transformer.initializeTransforms(data.featureLabels);
 
   if (transformer.shouldPreprocess()) {

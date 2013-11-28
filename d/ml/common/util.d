@@ -26,3 +26,16 @@ JSONValue parseJson(string filename) {
   }
   return jsonRoot;
 }
+
+int findIndex(T)(T[] values, T key) {
+  int idx = -1;
+
+  foreach(i; 0 .. values.length) {
+    if (values[i] == key) {
+      idx = cast(int)i;
+      break;
+    }
+  }
+
+  return idx;
+}
