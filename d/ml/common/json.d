@@ -1,96 +1,83 @@
 module common.json;
 
+import std.stdio;
 import std.json;
+import std.traits;
 
 
 class JSONUtil {
-  static bool getString(ref JSONValue json, string key, ref string result) {
+  static bool parseValue(T)(ref JSONValue json, string key, ref T result) {
     assert(json.type == JSON_TYPE.OBJECT);
 
     if (key !in json.object) return false;
 
     auto keyNode = json.object[key];
-    if (keyNode.type != JSON_TYPE.STRING) return false;
-    result = keyNode.str;
-
-    return true;
+    return getValue(keyNode, result);
   }
 
-  static bool getInt(ref JSONValue json, string key, ref long result) {
-    assert(json.type == JSON_TYPE.OBJECT);
-  
-    if (key !in json.object) return false;
+  static bool getValue(T)(ref JSONValue json, ref T result) { 
+    static if (is(T == string)) {
+      if (json.type != JSON_TYPE.STRING) return false;
+      result = json.str;
+      return true;
+    } static if (isArray!T && !is(T == string)) {
+      if (json.type != JSON_TYPE.ARRAY) return false;
+      result.length = json.array.length;
 
-    auto keyNode = json.object[key];
-    if (keyNode.type != JSON_TYPE.INTEGER) return false;
+      foreach(i; 0 .. result.length) {
+        if (getValue(json.array[i], result[i]) == false) {
+          return false;
+        }
+      }
 
-    result = keyNode.integer;
-    return true;
+      return true;
+    } static if (is(T == long)) {
+      if (json.type != JSON_TYPE.INTEGER) return false;
+      result = json.integer;
+      return true;
+    } static if (is(T == real)) {
+      if (json.type != JSON_TYPE.FLOAT) return false;
+      result = json.floating;
+      return true;
+    } static if (is(T == bool)) {
+      result = json.type == JSON_TYPE.TRUE;
+      return true;
+    } static if (is(T == JSONValue)) {
+      if (json.type != JSON_TYPE.OBJECT) return false;
+      result = json;
+      return true;
+    } else {
+      assert(false, "Type not supported for parsing");
+    }
   }
 
-  static bool getFloat(ref JSONValue json, string key, ref real result) {
-    assert(json.type == JSON_TYPE.OBJECT);
-  
-    if (key !in json.object) return false;
-
-    auto keyNode = json.object[key];
-    if (keyNode.type != JSON_TYPE.FLOAT) return false;
-
-    result = keyNode.floating;
-    return true;
+  static void saveValue(T)(ref JSONValue config, string key, T value) {
+    assert(config.type == JSON_TYPE.OBJECT, "Config not an object node");
+    config.object[key] = createNode(value);
   }
 
-  static bool getBool(ref JSONValue json, string key, ref bool result) {
-    assert(json.type == JSON_TYPE.OBJECT);
-  
-    if (key !in json.object) return false;
+  private static JSONValue createNode(T)(ref T value) {
+    JSONValue ret;
+    static if (is(T == long)) {
+      ret.type = JSON_TYPE.INTEGER;
+      ret.integer = value;
+    }
+    static if (is(T == string)) {
+      ret.type = JSON_TYPE.STRING;
+      ret.str = value;
+    }
+    static if (is(T == real) || is(T == double)) {
+      ret.type = JSON_TYPE.FLOAT;
+      ret.floating = value;
+    }
+    static if (isArray!T && !is(T == string)) {
+      ret.type = JSON_TYPE.ARRAY;
+      ret.array.length = value.length;
 
-    auto keyNode = json.object[key];
-    result = keyNode.type == JSON_TYPE.TRUE;
-    return true;
-  }
-
-  static bool getObject(ref JSONValue json, string key, ref JSONValue result) {
-    assert(json.type == JSON_TYPE.OBJECT);
-  
-    if (key !in json.object) return false;
-
-    auto keyNode = json.object[key];
-    if (keyNode.type != JSON_TYPE.OBJECT) return false;
-
-    result = keyNode;
-    return true;
-  }
-
-  static bool getArray(T)(ref JSONValue json, string key, ref T[] result)
-    if (is(T == string) || is(T == real) || is(T == long)) {
-    assert(json.type == JSON_TYPE.OBJECT);
-
-    if (key !in json.object) return false;
-
-    auto keyNode = json.object[key];
-    if (keyNode.type != JSON_TYPE.ARRAY) return false;
-
-    result.length = keyNode.array.length;
-    static if(is(T == real)) {
-      foreach(i, node; keyNode.array) {
-        assert(node.type == JSON_TYPE.FLOAT);
-        result[i] = node.floating;
+      foreach(i; 0 .. value.length) {
+        ret[i] = createNode(value[i]);
       }
     }
-    static if(is(T == string)) {
-      foreach(i, node; keyNode.array) {
-        assert(node.type == JSON_TYPE.STRING);
-        result[i] = node.str;
-      }
-    }
-    static if(is(T == long)) {
-      foreach(i, node; keyNode.array) {
-        assert(node.type == JSON_TYPE.INTEGER);
-        result[i] = node.integer;
-      }
-    }
-
-    return true;
+    return ret;
   }
 }

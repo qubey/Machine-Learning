@@ -1,12 +1,21 @@
 {
   "output": {
+    "prediction_label": "Survived",
     "features": false,
     "target": false,
     "delimiter": ",",
     "raw_copy_cols": [ "PassengerId" ]
   },
   "input": {
-    "target_name": "Survived"
+    "target_name": "Survived",
+    "test_data": "titanic/test.csv",
+    "training_data": "titanic/train.csv"
+  },
+  "evaluation": {
+    "enable": true,
+    "folds": 10,
+    "measurement": "percent_correct",
+    "seed": 300
   },
   "model": {
     "type": "naive_bayes",
@@ -17,16 +26,10 @@
   },
   "transforms": [
     {
-      "name": "age_norm",
-      "type": "normalize",
-      "input": [ "Age" ],
-      "output": false
-    },
-    {
-      "name": "fare_norm",
-      "type": "normalize",
-      "input": [ "Fare" ],
-      "output": false
+      "name": "logprice",
+      "type": "log",
+      "output": true,
+      "input": [ "Fare" ]
     },
     {
       "name": "fare_qb",
@@ -49,17 +52,10 @@
       "input": [ "age_qb", "name_word" ]
     },
     {
-      "name": "name_age_cat",
-      "type": "vec_to_id",
-      "output": false,
-      "input": [ "name_age_ngram" ]
-    },
-    {
-      "name": "age_norm_gt",
-      "type": "greater_than",
-      "input": [ "age_norm" ],
-      "output": false,
-      "threshold": 0.2
+      "name": "name_fare_ngram",
+      "type": "ngram",
+      "output": true,
+      "input": [ "fare_qb", "name_word" ]
     },
     {
       "name": "age_qb",

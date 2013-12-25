@@ -14,4 +14,13 @@ class Model {
   abstract void batchTrain(ref TransformedDataSet data);
 
   abstract void batchPredict(ref TransformedDataSet data, out double[] preds);
+
+  void saveModel(ref JSONValue config) {
+    JSONValue modelNode;
+    modelNode.type = JSON_TYPE.OBJECT;
+    save(modelNode);
+    config.object["model"] = modelNode;
+  }
+
+  protected abstract void save(ref JSONValue config);
 }

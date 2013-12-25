@@ -1,6 +1,6 @@
 bin = ${D_MAKE_ROOT}/bin
 libs = $(bin)/common/libcommon.o $(bin)/transform/libtransform.o \
-  $(bin)/algorithm/libmodels.o
+  $(bin)/algorithm/libmodels.o $(bin)/workflow/libworkflow.o
 include_flags = -I${D_MAKE_ROOT}
 out_dir = $(bin)/tools
 

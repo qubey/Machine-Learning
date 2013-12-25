@@ -231,20 +231,23 @@ class Transformer {
     }
 
     try {
-      JSONValue transformNode;
-      transformNode.type = JSON_TYPE.ARRAY;
-      foreach (t; transforms) {
-        JSONValue tconf;
-        t.save(tconf);
-        transformNode.array ~= tconf;
-      }
-
-      initialRoot.object["transforms"] = transformNode;
-
+      saveTransforms(initialRoot);
       std.file.write(filename, toJSON(&initialRoot));
     } catch (Exception e) {
       assert(false, "Error writing JSON: " ~ e.msg);
     }
+  }
+
+  void saveTransforms(ref JSONValue config) {
+    JSONValue transformNode;
+    transformNode.type = JSON_TYPE.ARRAY;
+    foreach (t; transforms) {
+      JSONValue tconf;
+      t.save(tconf);
+      transformNode.array ~= tconf;
+    }
+
+    config.object["transforms"] = transformNode;
   }
 
   private FeatureVector allFeatures;

@@ -78,10 +78,13 @@ class KMeansModel : CentroidModel {
       centroids[i].length = firstExample.features.length;
     }
 
-    auto randGen = Mt19937(seed);
+    auto randGen = Mt19937(cast(uint)seed);
     foreach (curClass; 0 .. k) {
       foreach(i; 0 .. featureMins.length) {
-        double num = uniform(featureMins[i], featureMaxes[i], randGen);
+        double num = 0.0;
+        if (featureMins[i] != featureMaxes[i]) {
+          num = uniform(featureMins[i], featureMaxes[i], randGen);
+        }
         centroids[curClass][i] = num;
       }
     }

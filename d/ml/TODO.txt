@@ -1,5 +1,7 @@
 Transforms:
-0. Add option to ignore input column and option to include a column in output
+- make a ModelTransform class which will run a model as a transform for the final model
+- make it so that the saved transforms will read their input and output indices from the config and not be re-sorted by the topological sort (this ensures that the saved models don't have to worry about the column definitions changing)
+
 1. Naive Bayes
 2. LDA
 3. Linear regression (MLE, ridge, bayesian)

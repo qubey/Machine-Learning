@@ -12,39 +12,40 @@ import std.conv;
 import std.array;
 
 import common.data;
+import common.json;
 import algorithm.model;
 
 class CentroidModel : Model {
   protected {
-    int k; // number of clusters
+    long k; // number of clusters
     double[][] centroids;
-    int seed;
-    int iterations;
+    long seed;
+    long iterations;
   }
 
   this(JSONValue config) {
     super(config);
-    assert("k" in config.object, "Missing 'k' value for k-means");
-    auto knode = config.object["k"];
-    assert(knode.type == JSON_TYPE.INTEGER,
-           "k value for k-means should be int");
 
-    if ("seed" in config.object) {
-      auto seedNode = config.object["seed"];
-      assert(seedNode.type == JSON_TYPE.INTEGER, "Seed for kmeans not an int");
-      seed = cast(int) seedNode.integer;
-    } else {
-      seed = 66;
-    }
+    bool success;
+    success = JSONUtil.parseValue(config, "k", k);
+    assert(success, "Could not find k value for model");
 
-    // Initialize the number of clusters
-    k = cast(int)knode.integer;
-    centroids.length = k;
+    seed = 66;
+    JSONUtil.parseValue(config, "seed", seed);
 
-    assert ("iterations" in config.object, "Missing iterations count");
-    auto iterationNode = config.object["iterations"];
-    assert(iterationNode.type == JSON_TYPE.INTEGER);
-    iterations = cast(int) iterationNode.integer;
+    success = JSONUtil.parseValue(config, "iterations", iterations);
+    assert(success, "Could not find 'iterations' in model config");
+
+    // Check whether we have a starting point for the centroids
+    JSONUtil.parseValue(config, "centroids", centroids);
+  }
+
+  override void save(ref JSONValue config) {
+    assert(config.type == JSON_TYPE.OBJECT, "Config should be of type object");
+    JSONUtil.saveValue(config, "k", k);
+    JSONUtil.saveValue(config, "seed", seed);
+    JSONUtil.saveValue(config, "iterations", iterations);
+    JSONUtil.saveValue(config, "centroids", centroids);
   }
 
   // Initialize the centroids to their starting points
@@ -56,6 +57,7 @@ class CentroidModel : Model {
   override void batchTrain(ref TransformedDataSet data) {
     assert(data.examples.length > 0, "Data given has 0 examples");
     assert(data.examples[0].features.length > 0, "Data given has 0 features");
+    centroids.length = k;
 
     initializeCentroids(data);
 
@@ -106,7 +108,7 @@ class CentroidModel : Model {
   ) {
     foreach (ex; data.examples) {
       double minDistance = computeDistance(centroids[0], ex.features);
-      int closestCentroid = 0;
+      long closestCentroid = 0;
 
       foreach(centroid; 1 .. k) {
         double distance = computeDistance(centroids[centroid], ex.features);

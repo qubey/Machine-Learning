@@ -28,15 +28,19 @@ class NaiveBayesModel : Model {
     super(config);
 
     long k;
-    assert(JSONUtil.getInt(config, "k", k),
+    assert(JSONUtil.parseValue(config, "k", k),
            "Need to specify number of classes");
 
-    JSONUtil.getFloat(config, "feature_prior", featurePrior);
-    JSONUtil.getInt(config, "feature_prior_weight", featurePriorWeight);
-    JSONUtil.getInt(config, "class_prior_weight", classPriorWeight);
+    JSONUtil.parseValue(config, "feature_prior", featurePrior);
+    JSONUtil.parseValue(config, "feature_prior_weight", featurePriorWeight);
+    JSONUtil.parseValue(config, "class_prior_weight", classPriorWeight);
 
     classProb = Multinoulli(k, classPriorWeight);
     featureProbs.length = k;
+  }
+
+  override void save(ref JSONValue config) {
+    assert(config.type == JSON_TYPE.OBJECT, "Config should be object");
   }
 
   override void batchPredict(ref TransformedDataSet data, out double[] preds) {

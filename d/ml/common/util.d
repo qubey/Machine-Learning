@@ -11,9 +11,18 @@ const auto kIgnoreWords =
     r"^(from|by|has|or|of|a|an|the|it|its)$";
 
 string[] scrub(string rawInput) {
-  auto input = removechars(toLower(rawInput),  ",.()\"\':");
+  auto input = normalize(rawInput);
   string[] rawTokens = split(input);
   return array(filter!(a => !match(a, kIgnoreWords))(rawTokens));
+}
+
+string normalize(string rawInput) {
+  auto input = removechars(toLower(rawInput),  ",.()\"\':");
+  return input;
+}
+
+bool isStringCsvField(string input) {
+  return countchars(input, ",()\"\':") > 0;
 }
 
 JSONValue parseJson(string filename) {
