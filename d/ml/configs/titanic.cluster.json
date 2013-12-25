@@ -1,0 +1,59 @@
+{
+  "output": {
+    "prediction_label": "Cluster",
+    "features": false,
+    "target": false,
+    "delimiter": ",",
+    "raw_copy_cols": [ "PassengerId", "Fare", "Name", "Age" ]
+  },
+  "input": {
+    "target_name": "Survived",
+    "training_data": "titanic/train.csv"
+  },
+  "evaluation": {
+    "enable": false,
+    "folds": 10,
+    "measurement": "percent_correct",
+    "seed": 300
+  },
+  "model": {
+    "type": "kmeans",
+    "k": 10,
+    "iterations": 5
+  },
+  "transforms": [
+    {
+      "name": "fare_qb",
+      "type": "quantile_bucket",
+      "buckets": 10,
+      "output": true,
+      "input": [ "Fare" ]
+    },
+    {
+      "name": "name_word",
+      "type": "words",
+      "max_card": 3,
+      "output": true,
+      "input": [ "Name" ]
+    },
+    {
+      "name": "name_age_ngram",
+      "type": "ngram",
+      "output": true,
+      "input": [ "age_qb", "name_word" ]
+    },
+    {
+      "name": "name_fare_ngram",
+      "type": "ngram",
+      "output": true,
+      "input": [ "fare_qb", "name_word" ]
+    },
+    {
+      "name": "age_qb",
+      "type": "quantile_bucket",
+      "input": [ "Age" ],
+      "buckets": 10,
+      "output": true
+    }
+  ]
+}
