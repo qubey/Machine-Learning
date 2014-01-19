@@ -12,6 +12,7 @@ import std.array;
 import std.string;
 import std.range;
 
+import common.json;
 import common.data;
 import common.util;
 
@@ -20,7 +21,7 @@ class FeatureTransform {
   string name;
   string[] inputs;
   bool includeInOutput;
-  int outputStartIndex;
+  int outputStartIndex = -1;
   int finalOutputIndex;
 
   this(JSONValue config) {
@@ -42,6 +43,8 @@ class FeatureTransform {
       auto outputNode = config.object["output"];
       includeInOutput = outputNode.type == JSON_TYPE.TRUE;
     }
+
+    JSONUtil.parseValue(config, "out_index", outputStartIndex);
   }
 
   void save(ref JSONValue config) {
@@ -72,6 +75,8 @@ class FeatureTransform {
     JSONValue outputNode;
     outputNode.type = (includeInOutput ? JSON_TYPE.TRUE : JSON_TYPE.FALSE);
     config.object["output"] = outputNode;
+
+    JSONUtil.saveValue(config, "out_index", outputStartIndex);
   }
 
   bool requiresPreprocess() {
@@ -91,7 +96,9 @@ class FeatureTransform {
   }
 
   void setOutputIndex(int o) {
-    outputStartIndex = o;
+    if (outputStartIndex < 0) {
+      outputStartIndex = o;
+    }
   }
 
   void process(ref FeatureVector ex, double target) {

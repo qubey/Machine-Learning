@@ -58,7 +58,7 @@ class JSONUtil {
 
   private static JSONValue createNode(T)(ref T value) {
     JSONValue ret;
-    static if (is(T == long)) {
+    static if (is(T == long) || is(T == int)) {
       ret.type = JSON_TYPE.INTEGER;
       ret.integer = value;
     }
