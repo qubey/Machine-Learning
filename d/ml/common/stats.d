@@ -62,6 +62,53 @@ struct Bernoulli {
   }
 }
 
+struct Gaussian {
+  double[] mean;
+  double[][] covariance;
+
+  this(long dimensions) {
+    mean.length = dimensions;
+    covariance.length = dimensions;
+    foreach (i; 0 .. dimensions) {
+      covariance.length = dimensions;
+    }
+
+    mean[] = 0.0L;
+
+    foreach (cov; covariance) {
+      cov[] = 0.0L;
+    }
+  }
+
+  void compute(double[][] input) {
+    assert(input.length > 0);
+    assert(input[0].length == mean.length);
+
+    // Compute the MLE mean
+    foreach (point; input) {
+      mean[] += point[];
+    }
+    mean[] /= input.length;
+
+    // Compute the covariance matrix
+    foreach (point; input) {
+      double[] diff;
+      diff.length = point.length;
+      diff[] = point[] - mean[];
+
+      // Do the diff * diff_transpose multiplication
+      foreach (i; 0 .. diff.length) {
+        foreach (j; 0 .. diff.length) {
+          covariance[i][j] += diff[i] * diff[j];
+        }
+      }
+    }
+    foreach (cov; covariance) {
+      cov[] /= input.length;
+    }
+  }
+}
+
 struct Fraction {
   ulong numerator;
   ulong denominator;
